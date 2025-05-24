@@ -2,6 +2,7 @@ export enum View {
   HOME = 'HOME',
   DETAIL = 'DETAIL',
   LEILA = 'LEILA',
+  SIGHT_WORDS = 'SIGHT_WORDS',
 }
 
 export interface CategoryDetail {

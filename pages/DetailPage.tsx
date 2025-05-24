@@ -5,6 +5,7 @@ import CategoryItem from '../components/CategoryItem';
 import LeilaPage from './LeilaPage';
 import TypingPage from './TypingPage';
 import MathPage from './MathPage';
+import SightWordsPage from './SightWordsPage';
 
 interface DetailPageProps {
   category: Category;
@@ -19,6 +20,7 @@ const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) =
   const isChatCategory = category.id === 'leila';
   const isTypingCategory = category.id === 'learn-typing';
   const isMathCategory = category.id === 'learn-math';
+  const isSightWordsCategory = category.id === 'sight-words';
 
   return (
     <div className="flex flex-col items-center space-y-10 pt-8 pb-16">
@@ -38,6 +40,10 @@ const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) =
       ) : isMathCategory ? (
         <div className="w-full">
           <MathPage />
+        </div>
+      ) : isSightWordsCategory ? (
+        <div className="w-full">
+          <SightWordsPage />
         </div>
       ) : (
         <div className="w-full max-w-3xl flex flex-col items-center">

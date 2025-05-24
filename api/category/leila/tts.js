@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { text } = req.body;
+    const { text, speed } = req.body;
     
     if (!text) {
       return res.status(400).json({ error: 'No text provided' });
@@ -31,10 +31,14 @@ export default async function handler(req, res) {
       apiKey: apiKey
     });
 
+    // Use provided speed or default to 0.7 for slower speech suitable for kids (30% slower)
+    const speechSpeed = speed || 0.7;
+
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
       voice: "nova",
-      input: text
+      input: text,
+      speed: speechSpeed
     });
 
     const buffer = Buffer.from(await mp3.arrayBuffer());

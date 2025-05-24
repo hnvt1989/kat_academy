@@ -18,6 +18,22 @@ export const CATEGORIES_DATA: Category[] = [
     }
   },
   {
+    id: 'sight-words',
+    title: 'Sight Words',
+    description: 'Learn common words with audio',
+    imageUrl: '/sheep_type.png',
+    bgColorClass: 'bg-purple-400',
+    detail: {
+      pageTitle: "Sight Words Learning",
+      subtitle: "Master essential sight words with interactive audio learning designed for young readers.",
+      mainImage: '/sheep_type.png',
+      imageDescription: "Interactive sight words learning with audio support.",
+      age: '5-8',
+      size: '100+',
+      illustrator: 'READING MASTERS',
+    }
+  },
+  {
     id: 'tiny-cats',
     title: 'Tiny Cats',
     description: 'Read exciting stories',

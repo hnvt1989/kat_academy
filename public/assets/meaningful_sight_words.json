@@ -1,0 +1,402 @@
+[
+  {
+    "sight_word": "ran",
+    "sentence": "He ran to the park."
+  },
+  {
+    "sight_word": "fine",
+    "sentence": "She is feeling fine today."
+  },
+  {
+    "sight_word": "fix",
+    "sentence": "Can you fix my toy?"
+  },
+  {
+    "sight_word": "food",
+    "sentence": "We ate tasty food."
+  },
+  {
+    "sight_word": "found",
+    "sentence": "I found my book."
+  },
+  {
+    "sight_word": "four",
+    "sentence": "I have four pencils."
+  },
+  {
+    "sight_word": "a",
+    "sentence": "I see a dog."
+  },
+  {
+    "sight_word": "and",
+    "sentence": "Mom and dad are home."
+  },
+  {
+    "sight_word": "away",
+    "sentence": "The cat ran away."
+  },
+  {
+    "sight_word": "big",
+    "sentence": "That is a big truck."
+  },
+  {
+    "sight_word": "blue",
+    "sentence": "She has a blue ball."
+  },
+  {
+    "sight_word": "can",
+    "sentence": "I can jump high."
+  },
+  {
+    "sight_word": "come",
+    "sentence": "Come sit with me."
+  },
+  {
+    "sight_word": "down",
+    "sentence": "He fell down the hill."
+  },
+  {
+    "sight_word": "find",
+    "sentence": "Can you find my hat?"
+  },
+  {
+    "sight_word": "for",
+    "sentence": "This gift is for you."
+  },
+  {
+    "sight_word": "funny",
+    "sentence": "That clown is funny."
+  },
+  {
+    "sight_word": "go",
+    "sentence": "Let\u2019s go to the zoo."
+  },
+  {
+    "sight_word": "help",
+    "sentence": "Can you help me?"
+  },
+  {
+    "sight_word": "here",
+    "sentence": "The toy is here."
+  },
+  {
+    "sight_word": "I",
+    "sentence": "I like ice cream."
+  },
+  {
+    "sight_word": "in",
+    "sentence": "Put the book in the bag."
+  },
+  {
+    "sight_word": "is",
+    "sentence": "This is my dog."
+  },
+  {
+    "sight_word": "it",
+    "sentence": "It is very soft."
+  },
+  {
+    "sight_word": "jump",
+    "sentence": "I can jump over the log."
+  },
+  {
+    "sight_word": "little",
+    "sentence": "The little bird sings."
+  },
+  {
+    "sight_word": "look",
+    "sentence": "Look at that bug!"
+  },
+  {
+    "sight_word": "make",
+    "sentence": "Can we make a cake?"
+  },
+  {
+    "sight_word": "me",
+    "sentence": "Give me the ball."
+  },
+  {
+    "sight_word": "my",
+    "sentence": "My shoes are red."
+  },
+  {
+    "sight_word": "not",
+    "sentence": "Do not touch that."
+  },
+  {
+    "sight_word": "one",
+    "sentence": "I have one cookie."
+  },
+  {
+    "sight_word": "play",
+    "sentence": "Let\u2019s play outside."
+  },
+  {
+    "sight_word": "red",
+    "sentence": "He wore a red cap."
+  },
+  {
+    "sight_word": "run",
+    "sentence": "Watch me run fast!"
+  },
+  {
+    "sight_word": "said",
+    "sentence": "Mom said it\u2019s bedtime."
+  },
+  {
+    "sight_word": "see",
+    "sentence": "Do you see the moon?"
+  },
+  {
+    "sight_word": "the",
+    "sentence": "The dog barked loudly."
+  },
+  {
+    "sight_word": "three",
+    "sentence": "She has three dolls."
+  },
+  {
+    "sight_word": "to",
+    "sentence": "Go to the door."
+  },
+  {
+    "sight_word": "two",
+    "sentence": "I have two hands."
+  },
+  {
+    "sight_word": "up",
+    "sentence": "Climb up the ladder."
+  },
+  {
+    "sight_word": "we",
+    "sentence": "We are best friends."
+  },
+  {
+    "sight_word": "where",
+    "sentence": "Where is my toy?"
+  },
+  {
+    "sight_word": "yellow",
+    "sentence": "The sun is yellow."
+  },
+  {
+    "sight_word": "you",
+    "sentence": "You are my friend."
+  },
+  {
+    "sight_word": "am",
+    "sentence": "I am happy today."
+  },
+  {
+    "sight_word": "are",
+    "sentence": "We are going out."
+  },
+  {
+    "sight_word": "be",
+    "sentence": "Be nice to others."
+  },
+  {
+    "sight_word": "black",
+    "sentence": "The cat is black."
+  },
+  {
+    "sight_word": "brown",
+    "sentence": "He has brown eyes."
+  },
+  {
+    "sight_word": "but",
+    "sentence": "I want to play but I\u2019m tired."
+  },
+  {
+    "sight_word": "did",
+    "sentence": "I did my homework."
+  },
+  {
+    "sight_word": "do",
+    "sentence": "Do you like cake?"
+  },
+  {
+    "sight_word": "eat",
+    "sentence": "Let\u2019s eat dinner."
+  },
+  {
+    "sight_word": "get",
+    "sentence": "Get your coat."
+  },
+  {
+    "sight_word": "good",
+    "sentence": "That was a good story."
+  },
+  {
+    "sight_word": "have",
+    "sentence": "I have a pet fish."
+  },
+  {
+    "sight_word": "he",
+    "sentence": "He is my brother."
+  },
+  {
+    "sight_word": "into",
+    "sentence": "Go into the house."
+  },
+  {
+    "sight_word": "like",
+    "sentence": "I like your dress."
+  },
+  {
+    "sight_word": "must",
+    "sentence": "You must be quiet."
+  },
+  {
+    "sight_word": "new",
+    "sentence": "I have a new bike."
+  },
+  {
+    "sight_word": "no",
+    "sentence": "No, I can\u2019t go."
+  },
+  {
+    "sight_word": "now",
+    "sentence": "We can go now."
+  },
+  {
+    "sight_word": "on",
+    "sentence": "Put the hat on."
+  },
+  {
+    "sight_word": "our",
+    "sentence": "Our class is fun."
+  },
+  {
+    "sight_word": "out",
+    "sentence": "Go out and play."
+  },
+  {
+    "sight_word": "please",
+    "sentence": "Please help me."
+  },
+  {
+    "sight_word": "pretty",
+    "sentence": "She looks very pretty."
+  },
+  {
+    "sight_word": "ride",
+    "sentence": "Can I ride your bike?"
+  },
+  {
+    "sight_word": "saw",
+    "sentence": "I saw a deer."
+  },
+  {
+    "sight_word": "say",
+    "sentence": "What did you say?"
+  },
+  {
+    "sight_word": "she",
+    "sentence": "She is my sister."
+  },
+  {
+    "sight_word": "so",
+    "sentence": "It\u2019s so cold today."
+  },
+  {
+    "sight_word": "soon",
+    "sentence": "We will eat soon."
+  },
+  {
+    "sight_word": "that",
+    "sentence": "That is my ball."
+  },
+  {
+    "sight_word": "there",
+    "sentence": "There is the dog."
+  },
+  {
+    "sight_word": "they",
+    "sentence": "They are friends."
+  },
+  {
+    "sight_word": "this",
+    "sentence": "This is my room."
+  },
+  {
+    "sight_word": "too",
+    "sentence": "I want to go too."
+  },
+  {
+    "sight_word": "under",
+    "sentence": "The toy is under the bed."
+  },
+  {
+    "sight_word": "want",
+    "sentence": "I want a cookie."
+  },
+  {
+    "sight_word": "was",
+    "sentence": "It was fun."
+  },
+  {
+    "sight_word": "well",
+    "sentence": "He swims well."
+  },
+  {
+    "sight_word": "went",
+    "sentence": "We went to the zoo."
+  },
+  {
+    "sight_word": "what",
+    "sentence": "What is your name?"
+  },
+  {
+    "sight_word": "white",
+    "sentence": "The snow is white."
+  },
+  {
+    "sight_word": "who",
+    "sentence": "Who is at the door?"
+  },
+  {
+    "sight_word": "will",
+    "sentence": "We will go soon."
+  },
+  {
+    "sight_word": "with",
+    "sentence": "Play with me."
+  },
+  {
+    "sight_word": "yes",
+    "sentence": "Yes, I like that."
+  },
+  {
+    "sight_word": "your",
+    "sentence": "Your shoes are new."
+  },
+  {
+    "sight_word": "day",
+    "sentence": "It is a sunny day."
+  },
+  {
+    "sight_word": "had",
+    "sentence": "I had a snack."
+  },
+  {
+    "sight_word": "all",
+    "sentence": "All the kids are here."
+  },
+  {
+    "sight_word": "from",
+    "sentence": "She came from school."
+  },
+  {
+    "sight_word": "just",
+    "sentence": "He just got home."
+  },
+  {
+    "sight_word": "over",
+    "sentence": "Jump over the rock."
+  },
+  {
+    "sight_word": "then",
+    "sentence": "We ate, then played."
+  }
+]
