@@ -14,7 +14,7 @@
       "destination": "/api/category/leila/tts"
     },
     {
-      "source": "/((?!mathProblems\\.json|assets/).*)",
+      "source": "/((?!mathProblems\\.json|assets/|static/).*)",
       "destination": "/index.html"
     }
   ],
