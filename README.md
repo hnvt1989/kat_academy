@@ -12,7 +12,7 @@ Interactive educational games for kids featuring typing challenges and math prob
 ## Local Development
 
 1. Install dependencies: `npm install`
-2. Set the `GEMINI_API_KEY` in `.env.local` to your Gemini API key (for Leila chatbot)
+2. Set the `OPENAI_API_KEY` in `.env.local` to your OpenAI API key (for Leila chatbot)
 3. Start development server: `npm run dev`
 
 ## Vercel Deployment
@@ -20,6 +20,6 @@ Interactive educational games for kids featuring typing challenges and math prob
 This project is ready for deployment on Vercel. See the deployment instructions below.
 
 ### Environment Variables Required:
-- `GEMINI_API_KEY`: Your Google Gemini API key for the chatbot feature
+- `OPENAI_API_KEY`: Your OpenAI API key for the chatbot and text-to-speech features
 
 The math and typing games work without any API keys.

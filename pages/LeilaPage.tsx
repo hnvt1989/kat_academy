@@ -331,48 +331,96 @@ const LeilaPage: React.FC = () => {
         }
 
         try {
+            // Try server-side TTS first
             const response = await fetch("/category/leila/tts", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text })
             });
-            if (!response.ok) throw new Error("TTS request failed");
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const audio = new Audio(url);
-            currentAudioRef.current = audio;
             
-            audio.onended = () => {
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                currentAudioRef.current = audio;
+                
+                audio.onended = () => {
+                    setIsSpeaking(false);
+                    setAnimationSrc('');
+                    if (recognitionRef.current && isListening) {
+                        speechTimeoutRef.current = setTimeout(() => {
+                            try { 
+                                recognitionRef.current?.start(); 
+                                console.log('Restarted speech recognition after TTS with extended delay');
+                            } catch (err) { 
+                                console.error('Error restarting speech recognition after TTS:', err); 
+                            }
+                        }, 1500);
+                    }
+                };
+                
+                await audio.play();
+            } else {
+                throw new Error("Server TTS not available");
+            }
+        } catch (e) {
+            console.log("Server TTS failed, falling back to Web Speech API:", e);
+            
+            // Fallback to Web Speech API
+            try {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.1;
+                    utterance.volume = 1;
+                    
+                    utterance.onend = () => {
+                        setIsSpeaking(false);
+                        setAnimationSrc('');
+                        if (recognitionRef.current && isListening) {
+                            speechTimeoutRef.current = setTimeout(() => {
+                                try { 
+                                    recognitionRef.current?.start(); 
+                                    console.log('Restarted speech recognition after Web Speech API');
+                                } catch (err) { 
+                                    console.error('Error restarting speech recognition after Web Speech API:', err); 
+                                }
+                            }, 1500);
+                        }
+                    };
+                    
+                    utterance.onerror = () => {
+                        console.error('Web Speech API error');
+                        setIsSpeaking(false);
+                        setAnimationSrc('');
+                        if (recognitionRef.current && isListening) {
+                            speechTimeoutRef.current = setTimeout(() => {
+                                try { 
+                                    recognitionRef.current?.start(); 
+                                } catch (err) { 
+                                    console.error('Error restarting speech recognition after speech error:', err); 
+                                }
+                            }, 1500);
+                        }
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                } else {
+                    throw new Error("Speech synthesis not supported");
+                }
+            } catch (fallbackError) {
+                console.error("Both TTS methods failed:", fallbackError);
                 setIsSpeaking(false);
                 setAnimationSrc('');
                 if (recognitionRef.current && isListening) {
-                    // Much longer delay to ensure audio output has completely stopped
                     speechTimeoutRef.current = setTimeout(() => {
                         try { 
                             recognitionRef.current?.start(); 
-                            console.log('Restarted speech recognition after TTS with extended delay');
                         } catch (err) { 
-                            console.error('Error restarting speech recognition after TTS:', err); 
+                            console.error('Error restarting speech recognition after all TTS failures:', err); 
                         }
-                    }, 1500); // Extended to 1.5 seconds to prevent echo
+                    }, 1500);
                 }
-            };
-            
-            await audio.play();
-        } catch (e) {
-            console.error("TTS error:", e);
-            setIsSpeaking(false);
-            setAnimationSrc('');
-            // Even on error, restart listening if we should be
-            if (recognitionRef.current && isListening) {
-                speechTimeoutRef.current = setTimeout(() => {
-                    try { 
-                        recognitionRef.current?.start(); 
-                        console.log('Restarted speech recognition after TTS error');
-                    } catch (err) { 
-                        console.error('Error restarting speech recognition after TTS error:', err); 
-                    }
-                }, 1500); // Same longer delay for error case
             }
         }
     };
