@@ -515,10 +515,10 @@ const LeilaPage: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-xl flex flex-col h-[calc(100vh-180px)] max-h-[700px] w-full overflow-hidden">
-            <div ref={chatboxRef} className="relative flex-grow p-4 space-y-4 overflow-y-auto bg-slate-100/70 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+            <div ref={chatboxRef} className="relative flex-grow p-4 space-y-4 overflow-y-auto bg-slate-100/70 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 kids-chat">
                 <button onClick={handleClearChat} className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Clear Chat</button>
                 {chatMessages.map((msg, index) => (
-                    <div key={index} className={msg.isUser ? 'user' : 'hailey'}>
+                    <div key={index} className={msg.isUser ? 'kids-user' : 'kids-leila'}>
                         {msg.isUser ? 'You' : 'Leila'}: {msg.text}
                     </div>
                 ))}
@@ -538,7 +538,7 @@ const LeilaPage: React.FC = () => {
                 </div>
             )}
             <div className="buttons">
-                <button id="mic" onClick={handleMicClick} className={`mic-button call-button ${isListening ? 'listening' : ''} ${isSpeaking ? 'speaking' : ''}`} title={isListening ? "Stop Listening" : "Start Call"}>
+                <button id="mic" onClick={handleMicClick} className={`mic-button call-button kids-mic-button ${isListening ? 'listening' : ''} ${isSpeaking ? 'speaking' : ''}`} title={isListening ? "Stop Listening" : "Start Call"}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2.09 2.09 0 01-2.26 2.09A19.72 19.72 0 012.28 5.35 2.09 2.09 0 014.37 3h3a1 1 0 011 .75l1.09 4.41a1 1 0 01-.27 1L6.91 11.09a16 16 0 006 6l2.2-2.2a1 1 0 011-.27l4.38 1.09a1 1 0 01.75 1z"/>
                     </svg>
