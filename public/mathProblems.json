@@ -1,0 +1,22 @@
+[
+  { "id": 1, "operation": "ADDITION", "operand1": 2, "operand2": 1, "answer": 3 },
+  { "id": 2, "operation": "ADDITION", "operand1": 3, "operand2": 2, "answer": 5 },
+  { "id": 3, "operation": "ADDITION", "operand1": 5, "operand2": 4, "answer": 9 },
+  { "id": 4, "operation": "ADDITION", "operand1": 6, "operand2": 3, "answer": 9 },
+  { "id": 5, "operation": "SUBTRACTION", "operand1": 4, "operand2": 1, "answer": 3 },
+  { "id": 6, "operation": "SUBTRACTION", "operand1": 5, "operand2": 3, "answer": 2 },
+  { "id": 7, "operation": "SUBTRACTION", "operand1": 9, "operand2": 4, "answer": 5 },
+  { "id": 8, "operation": "SUBTRACTION", "operand1": 7, "operand2": 5, "answer": 2 },
+  { "id": 9, "operation": "ADDITION", "operand1": 4, "operand2": 3, "answer": 7 },
+  { "id": 10, "operation": "SUBTRACTION", "operand1": 8, "operand2": 2, "answer": 6 },
+  { "id": 11, "operation": "ADDITION", "operand1": 1, "operand2": 2, "answer": 3 },
+  { "id": 12, "operation": "ADDITION", "operand1": 2, "operand2": 2, "answer": 4 },
+  { "id": 13, "operation": "ADDITION", "operand1": 0, "operand2": 3, "answer": 3 },
+  { "id": 14, "operation": "SUBTRACTION", "operand1": 4, "operand2": 2, "answer": 2 },
+  { "id": 15, "operation": "SUBTRACTION", "operand1": 5, "operand2": 5, "answer": 0 },
+  { "id": 16, "operation": "ADDITION", "operand1": 3, "operand2": 4, "answer": 7 },
+  { "id": 17, "operation": "ADDITION", "operand1": 1, "operand2": 0, "answer": 1 },
+  { "id": 18, "operation": "SUBTRACTION", "operand1": 6, "operand2": 1, "answer": 5 },
+  { "id": 19, "operation": "ADDITION", "operand1": 2, "operand2": 5, "answer": 7 },
+  { "id": 20, "operation": "SUBTRACTION", "operand1": 3, "operand2": 3, "answer": 0 }
+] 

@@ -4,6 +4,7 @@ import { CATEGORIES_DATA } from '../constants';
 import CategoryItem from '../components/CategoryItem';
 import LeilaPage from './LeilaPage';
 import TypingPage from './TypingPage';
+import MathPage from './MathPage';
 
 interface DetailPageProps {
   category: Category;
@@ -17,6 +18,7 @@ const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) =
 
   const isChatCategory = category.id === 'leila';
   const isTypingCategory = category.id === 'learn-typing';
+  const isMathCategory = category.id === 'learn-math';
 
   return (
     <div className="flex flex-col items-center space-y-10 pt-8 pb-16">
@@ -32,6 +34,10 @@ const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) =
       ) : isTypingCategory ? (
         <div className="w-full">
           <TypingPage />
+        </div>
+      ) : isMathCategory ? (
+        <div className="w-full">
+          <MathPage />
         </div>
       ) : (
         <div className="w-full max-w-3xl flex flex-col items-center">
@@ -58,7 +64,7 @@ const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) =
         </div>
       )}
 
-      {exploreMoreCategories.length > 0 && !isTypingCategory && (
+      {exploreMoreCategories.length > 0 && (
         <div className="w-full pt-10 mt-10 border-t border-gray-200">
           <h2 className="text-2xl font-bold text-brand-charcoal text-center mb-8">Explore More</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-8 w-full max-w-4xl mx-auto">

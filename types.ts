@@ -49,3 +49,24 @@ export interface TypingPhase {
   description: string;
   sentences: string[];
 }
+
+// Math game related types
+export enum OperationType {
+  ADDITION = 'ADDITION',
+  SUBTRACTION = 'SUBTRACTION',
+}
+
+export interface MathProblem {
+  id: number;
+  operation: OperationType;
+  operand1: number;
+  operand2: number;
+  answer: number;
+}
+
+export interface MathPhase {
+  id: number;
+  title: string;
+  description: string;
+  problemIds: number[];
+}

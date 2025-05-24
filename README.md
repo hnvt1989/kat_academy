@@ -1,14 +1,25 @@
-# Run and deploy your AI Studio app
+# KidZone Fun & Learning
 
-This contains everything you need to run your app locally.
+Interactive educational games for kids featuring typing challenges and math problems.
 
-## Run Locally
+## Features
 
-**Prerequisites:**  Node.js
+- **Learn Typing**: Interactive typing challenges with different difficulty phases
+- **Learn Math**: Visual math problems with addition and subtraction
+- **Leila Chatbot**: AI-powered educational companion
+- **Responsive Design**: Works on desktop and mobile devices
 
+## Local Development
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Install dependencies: `npm install`
+2. Set the `GEMINI_API_KEY` in `.env.local` to your Gemini API key (for Leila chatbot)
+3. Start development server: `npm run dev`
+
+## Vercel Deployment
+
+This project is ready for deployment on Vercel. See the deployment instructions below.
+
+### Environment Variables Required:
+- `GEMINI_API_KEY`: Your Google Gemini API key for the chatbot feature
+
+The math and typing games work without any API keys.
