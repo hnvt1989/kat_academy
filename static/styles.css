@@ -223,3 +223,40 @@ button:disabled {
 .button-label {
     font-size: 16px;
 }
+/* Kid-friendly styling for Leila chat */
+.kids-chat {
+    font-family: 'Comic Sans MS', 'Comic Neue', cursive;
+    font-size: 1.1rem;
+}
+
+.kids-user {
+    background: linear-gradient(135deg, #ffd36e, #ffb347);
+    color: #333;
+    margin-left: auto;
+    border-radius: 20px;
+    padding: 12px 16px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.kids-leila {
+    background: #c7f0ff;
+    color: #333;
+    margin-right: auto;
+    border-radius: 20px;
+    padding: 12px 16px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.kids-mic-button {
+    background: #ff6bd6;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    font-size: 32px;
+}
+
+.kids-mic-button:hover {
+    background: #ff52c6;
+}
