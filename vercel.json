@@ -6,6 +6,14 @@
   "devCommand": "npm run dev:vite",
   "rewrites": [
     {
+      "source": "/category/leila/chat",
+      "destination": "/api/category/leila/chat"
+    },
+    {
+      "source": "/category/leila/tts",
+      "destination": "/api/category/leila/tts"
+    },
+    {
       "source": "/((?!mathProblems\\.json|assets/).*)",
       "destination": "/index.html"
     }
