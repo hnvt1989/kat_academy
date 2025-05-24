@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:python\"",
+    "dev:vite": "vite",
+    "dev:python": "./venv/bin/python -m leila_chatbot.app",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -16,6 +18,7 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
+    "concurrently": "^9.1.2",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
   }

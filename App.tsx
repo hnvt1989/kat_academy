@@ -1,30 +1,92 @@
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Category } from './types';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import DetailPage from './pages/DetailPage';
+import LeilaPage from './pages/LeilaPage';
 import { CloseIcon } from './components/icons';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>(View.HOME);
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null);
+  const getViewFromPath = (path: string): View => {
+    if (path.startsWith('/category/')) return View.DETAIL;
+    return View.HOME;
+  };
+
+  const [currentView, setCurrentView] = useState<View>(() => getViewFromPath(window.location.pathname));
+  const [activeCategory, setActiveCategory] = useState<Category | null>(() => {
+    const path = window.location.pathname;
+    if (path === '/category/leila') {
+      return {
+        id: 'leila',
+        title: 'Leila the E-Sheep',
+        description: 'Chat with Leila the sheep',
+        imageUrl: '/leila-icon.png',
+        bgColorClass: 'bg-blue-500',
+        detail: {
+          pageTitle: 'Chat with Leila',
+          subtitle: 'Your friendly e-learning companion',
+          mainImage: '/leila-large.png',
+          imageDescription: 'Image of Leila the sheep'
+        }
+      };
+    }
+    // Potentially restore other categories based on path if needed, or set to null
+    return null;
+  });
+
+  // Effect to handle initial path and browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      setCurrentView(getViewFromPath(path));
+      if (path.startsWith('/category/')) {
+        const categoryId = path.split('/')[2];
+        if (categoryId === 'leila') {
+          setActiveCategory({
+            id: 'leila',
+            title: 'Leila the E-Sheep',
+            description: 'Chat with Leila the sheep',
+            imageUrl: '/leila-icon.png',
+            bgColorClass: 'bg-blue-500',
+            detail: {
+              pageTitle: 'Chat with Leila',
+              subtitle: 'Your friendly e-learning companion',
+              mainImage: '/leila-large.png',
+              imageDescription: 'Image of Leila the sheep'
+            }
+          });
+        } else {
+          // setActiveCategory(null); // Or find the category by ID
+        }
+      } else {
+        setActiveCategory(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const handleSelectCategory = useCallback((category: Category) => {
     setActiveCategory(category);
     setCurrentView(View.DETAIL);
-    window.scrollTo(0, 0); // Scroll to top on view change
+    window.history.pushState({}, '', `/category/${category.id}`);
+    window.scrollTo(0, 0);
   }, []);
 
   const handleCloseDetail = useCallback(() => {
     setCurrentView(View.HOME);
     setActiveCategory(null);
+    window.history.pushState({}, '', '/');
     window.scrollTo(0, 0);
   }, []);
 
   const handleNavigateHome = useCallback(() => {
     setCurrentView(View.HOME);
     setActiveCategory(null);
+    window.history.pushState({}, '', '/');
     window.scrollTo(0,0);
   }, []);
 

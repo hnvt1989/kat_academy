@@ -1,54 +1,10 @@
-// Add type definitions for SpeechRecognition API
-interface SpeechGrammarList { addFromString(string: string, weight?: number): void; item(index: number): SpeechGrammar; length: number; }
-interface SpeechGrammar { src: string; weight: number; }
+import React, { useState, useEffect, useRef } from 'react';
+import '../static/styles.css'; // Assuming styles.css is moved to static folder at root
+
+// TypeScript declarations for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
-    resultIndex: number;
     results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionResultList {
-    length: number;
-    item(index: number): SpeechRecognitionResult;
-    [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionResult {
-    isFinal: boolean;
-    [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-    transcript: string;
-    confidence: number;
-}
-
-interface SpeechRecognitionStatic {
-    new (): SpeechRecognition;
-}
-
-interface SpeechRecognition extends EventTarget {
-    grammars: SpeechGrammarList;
-    lang: string;
-    continuous: boolean;
-    interimResults: boolean;
-    maxAlternatives: number;
-    serviceURI: string;
-
-    start(): void;
-    stop(): void;
-    abort(): void;
-
-    onaudiostart: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onaudioend: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onend: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
-    onnomatch: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
-    onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
-    onsoundstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onsoundend: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onspeechstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onspeechenu: ((this: SpeechRecognition, ev: Event) => any) | null;
-    onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+    resultIndex: number;
 }
 
 interface SpeechRecognitionErrorEvent extends Event {
@@ -56,11 +12,52 @@ interface SpeechRecognitionErrorEvent extends Event {
     message: string;
 }
 
-declare var SpeechRecognition: SpeechRecognitionStatic;
-declare var webkitSpeechRecognition: SpeechRecognitionStatic; // For Safari/Chrome legacy
+interface SpeechRecognition extends EventTarget {
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    start(): void;
+    stop(): void;
+    onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+    onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
+}
 
-import React, { useState, useEffect, useRef } from 'react';
-import '../static/styles.css'; // Assuming styles.css is moved to static folder at root
+interface SpeechRecognitionConstructor {
+    new(): SpeechRecognition;
+}
+
+declare global {
+    interface Window {
+        SpeechRecognition: SpeechRecognitionConstructor;
+        webkitSpeechRecognition: SpeechRecognitionConstructor;
+    }
+}
+
+// Helper function to calculate text similarity for echo detection
+const calculateSimilarity = (str1: string, str2: string): number => {
+    if (!str1 || !str2) return 0;
+    if (str1 === str2) return 1;
+    
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1;
+    
+    // Simple substring check for quick similarity detection
+    const longerWords = longer.split(' ');
+    const shorterWords = shorter.split(' ');
+    let matches = 0;
+    
+    for (const word of shorterWords) {
+        if (word.length > 2 && longerWords.some(w => w.includes(word) || word.includes(w))) {
+            matches++;
+        }
+    }
+    
+    return shorterWords.length > 0 ? matches / shorterWords.length : 0;
+};
 
 const LeilaPage: React.FC = () => {
     const [chatMessages, setChatMessages] = useState<{ text: string; isUser: boolean }[]>([]);
@@ -74,6 +71,9 @@ const LeilaPage: React.FC = () => {
     const currentAudioRef = useRef<HTMLAudioElement | null>(null);
     const chatboxRef = useRef<HTMLDivElement>(null);
     const audioInitializedRef = useRef(false);
+    const lastBotResponseRef = useRef<string>('');
+    const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isEndingChatRef = useRef(false);
 
     useEffect(() => {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -94,15 +94,62 @@ const LeilaPage: React.FC = () => {
             };
 
             recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
-                if (isSpeaking) return;
+                if (isSpeaking) {
+                    console.log('Ignoring speech recognition while bot is speaking');
+                    return;
+                }
+
+                // Skip processing if chat is ending
+                if (isEndingChatRef.current) {
+                    console.log('Chat is ending, ignoring speech input');
+                    return;
+                }
 
                 let interimTranscript = '';
                 let finalTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
+                    const transcript = event.results[i][0].transcript.trim();
                     if (event.results[i].isFinal) {
                         finalTranscript = transcript;
-                        sendMessage(finalTranscript);
+                        
+                        // Check for farewell phrases first
+                        const lowerTranscript = finalTranscript.toLowerCase();
+                        const farewellPhrases = ['bye bye', 'goodbye', 'bye', 'see you later', 'talk to you later', 'gotta go', 'i have to go'];
+                        const isFarewell = farewellPhrases.some(phrase => lowerTranscript.includes(phrase));
+                        
+                        if (isFarewell && !isEndingChatRef.current) {
+                            console.log('Farewell detected, ending chat:', finalTranscript);
+                            isEndingChatRef.current = true; // Prevent multiple farewell triggers
+                            
+                            // Immediately stop speech recognition to prevent echo
+                            if (recognitionRef.current) {
+                                try {
+                                    recognitionRef.current.stop();
+                                } catch (err) {
+                                    console.error('Error stopping recognition on farewell:', err);
+                                }
+                            }
+                            
+                            addMessage(finalTranscript, true);
+                            addMessage('Goodbye! It was nice talking to you!', false);
+                            
+                            // End chat after TTS completes
+                            setTimeout(() => {
+                                endCall();
+                            }, 10000); // Wait 10 seconds before ending chat
+                            return;
+                        }
+                        
+                        // Filter out echo - check if it's similar to the last bot response
+                        const similarity = calculateSimilarity(finalTranscript.toLowerCase(), lastBotResponseRef.current.toLowerCase());
+                        console.log('Speech detected:', finalTranscript, 'Similarity to last response:', similarity);
+                        
+                        // Only process if it's different enough from the last bot response and has reasonable length
+                        if (finalTranscript.length > 2 && similarity < 0.7) {
+                            sendMessage(finalTranscript);
+                        } else {
+                            console.log('Filtered out likely echo or short utterance');
+                        }
                     } else {
                         interimTranscript += transcript;
                     }
@@ -110,14 +157,28 @@ const LeilaPage: React.FC = () => {
             };
 
             recognitionInstance.onend = () => {
-                if (isSpeaking) return;
+                console.log('Recognition ended. isSpeaking:', isSpeaking, 'isListening:', isListening);
                 setAnimationSrc('');
-                if (isListening && recognitionRef.current) {
-                    try {
-                        recognitionRef.current.start();
-                    } catch (error) {
-                        console.error('Error restarting speech recognition:', error);
-                    }
+                // Only restart if we're supposed to be listening and not currently speaking
+                if (isListening && !isSpeaking && recognitionRef.current) {
+                    setTimeout(() => {
+                        try {
+                            recognitionRef.current?.start();
+                            console.log('Restarted speech recognition');
+                        } catch (error) {
+                            console.error('Error restarting speech recognition:', error);
+                            // If restart fails, keep trying with exponential backoff
+                            setTimeout(() => {
+                                if (isListening && !isSpeaking && recognitionRef.current) {
+                                    try {
+                                        recognitionRef.current.start();
+                                    } catch (retryError) {
+                                        console.error('Retry failed:', retryError);
+                                    }
+                                }
+                            }, 1000);
+                        }
+                    }, 100); // Small delay to prevent rapid restart issues
                 } else {
                     setIsListening(false);
                 }
@@ -125,10 +186,19 @@ const LeilaPage: React.FC = () => {
 
             recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
                 console.error('Speech recognition error:', event.error);
-                if (event.error === 'no-speech') return;
-                setIsListening(false);
+                if (event.error === 'no-speech') {
+                    // Ignore no-speech errors and continue listening
+                    return;
+                }
+                if (event.error === 'aborted') {
+                    // Ignore aborted errors - these happen during normal stops
+                    return;
+                }
                 setAnimationSrc('');
-                addMessage('Sorry, I had trouble understanding you. Please try again.');
+                // For other errors, only show message if it's a significant error
+                if (event.error !== 'network') {
+                    addMessage('Sorry, I had trouble understanding you. Please try again.');
+                }
             };
             recognitionRef.current = recognitionInstance;
         } else {
@@ -142,14 +212,53 @@ const LeilaPage: React.FC = () => {
             if (currentAudioRef.current) {
                 currentAudioRef.current.pause();
             }
+            if (speechTimeoutRef.current) {
+                clearTimeout(speechTimeoutRef.current);
+            }
         };
-    }, [isSpeaking]); // Added isSpeaking to dependency array to re-evaluate onend logic
+    }, []); // Removed isSpeaking from dependencies to prevent recreation
 
     useEffect(() => {
         if (chatboxRef.current) {
             chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
         }
     }, [chatMessages]);
+
+    // Cleanup when navigating away from the page
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            console.log('Page unloading, cleaning up chat');
+            if (recognitionRef.current && isListening) {
+                recognitionRef.current.stop();
+            }
+            if (currentAudioRef.current) {
+                currentAudioRef.current.pause();
+            }
+            if (speechTimeoutRef.current) {
+                clearTimeout(speechTimeoutRef.current);
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                console.log('Page hidden, pausing chat');
+                if (recognitionRef.current && isListening) {
+                    recognitionRef.current.stop();
+                }
+                if (currentAudioRef.current) {
+                    currentAudioRef.current.pause();
+                }
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [isListening]);
 
     const initializeAudio = () => {
         if (audioInitializedRef.current) return true;
@@ -168,36 +277,61 @@ const LeilaPage: React.FC = () => {
             oscillator.stop(audioContext.currentTime + 0.001); // Play for a very short duration
         }
         // Play a silent audio to unlock audio playback on iOS
-        const silentAudio = new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=");
+        const silentAudio = new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=");
         silentAudio.play().catch(e => console.log("Silent audio play error:", e));
         audioInitializedRef.current = true;
-        console.log("Audio initialization complete!");
+        setShowAudioPermission(false); // Hide permission prompt once initialized
         return true;
+    };
+
+    const handleEnableAudio = () => {
+        initializeAudio();
+    };
+
+    const handleTestAudio = async () => {
+        if (!initializeAudio()) return;
+        await speak("Hello! I am Leila. Can you hear me?");
     };
 
     useEffect(() => {
         const initAudioOnInteraction = () => {
             if (!audioInitializedRef.current) {
-                initializeAudio();
+                // We don't want to auto-init here, just remove the listener if it was somehow added
             }
         };
-        document.body.addEventListener('click', initAudioOnInteraction, { once: true });
+        // Remove this event listener as we now have an explicit button
+        // document.body.addEventListener('click', initAudioOnInteraction, { once: true });
         return () => {
-            document.body.removeEventListener('click', initAudioOnInteraction);
+            // document.body.removeEventListener('click', initAudioOnInteraction);
         };
     }, []);
 
     const speak = async (text: string) => {
         if (!text) return;
+        
+        // Store the last bot response for echo filtering
+        lastBotResponseRef.current = text;
+        
         setIsSpeaking(true);
         setAnimationSrc('/static/talking.webp');
 
+        // Clear any pending speech timeout
+        if (speechTimeoutRef.current) {
+            clearTimeout(speechTimeoutRef.current);
+        }
+
+        // Stop recognition immediately and ensure it stays stopped during speech
         if (recognitionRef.current && isListening) {
-            try { recognitionRef.current.stop(); } catch (err) { console.error('Error stopping speech recognition:', err); }
+            try { 
+                recognitionRef.current.stop(); 
+                console.log('Stopped speech recognition for TTS');
+            } catch (err) { 
+                console.error('Error stopping speech recognition:', err); 
+            }
         }
 
         try {
-            const response = await fetch("/leila/tts", {
+            const response = await fetch("/category/leila/tts", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text })
@@ -207,18 +341,39 @@ const LeilaPage: React.FC = () => {
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
             currentAudioRef.current = audio;
+            
             audio.onended = () => {
                 setIsSpeaking(false);
                 setAnimationSrc('');
                 if (recognitionRef.current && isListening) {
-                    try { recognitionRef.current.start(); } catch (err) { console.error('Error restarting speech recognition after TTS:', err); }
+                    // Much longer delay to ensure audio output has completely stopped
+                    speechTimeoutRef.current = setTimeout(() => {
+                        try { 
+                            recognitionRef.current?.start(); 
+                            console.log('Restarted speech recognition after TTS with extended delay');
+                        } catch (err) { 
+                            console.error('Error restarting speech recognition after TTS:', err); 
+                        }
+                    }, 1500); // Extended to 1.5 seconds to prevent echo
                 }
             };
+            
             await audio.play();
         } catch (e) {
             console.error("TTS error:", e);
             setIsSpeaking(false);
             setAnimationSrc('');
+            // Even on error, restart listening if we should be
+            if (recognitionRef.current && isListening) {
+                speechTimeoutRef.current = setTimeout(() => {
+                    try { 
+                        recognitionRef.current?.start(); 
+                        console.log('Restarted speech recognition after TTS error');
+                    } catch (err) { 
+                        console.error('Error restarting speech recognition after TTS error:', err); 
+                    }
+                }, 1500); // Same longer delay for error case
+            }
         }
     };
 
@@ -234,7 +389,7 @@ const LeilaPage: React.FC = () => {
         addMessage(text, true);
         setIsLoading(true);
         try {
-            const response = await fetch('/leila/chat', {
+            const response = await fetch('/category/leila/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -256,7 +411,7 @@ const LeilaPage: React.FC = () => {
 
         if (!isListening) {
             if (!audioInitializedRef.current) {
-                initializeAudio();
+                initializeAudio(); // Should now work due to user interaction via button
             }
             try {
                 recognitionRef.current.start();
@@ -270,6 +425,13 @@ const LeilaPage: React.FC = () => {
 
     const endCall = () => {
         setChatMessages([]);
+        
+        // Clear any pending speech timeouts
+        if (speechTimeoutRef.current) {
+            clearTimeout(speechTimeoutRef.current);
+            speechTimeoutRef.current = null;
+        }
+        
         if (currentAudioRef.current) {
             currentAudioRef.current.pause();
             currentAudioRef.current.currentTime = 0;
@@ -280,91 +442,31 @@ const LeilaPage: React.FC = () => {
         }
         setIsSpeaking(false);
         setAnimationSrc('');
+        
+        // Clear the last bot response and reset flags
+        lastBotResponseRef.current = '';
+        isEndingChatRef.current = false;
     };
 
-    // Keyboard shortcut for Esc to end call/stop listening
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                if (isListening && recognitionRef.current) {
-                    recognitionRef.current.stop();
-                    setIsListening(false);
-                }
-                if (currentAudioRef.current) {
-                    currentAudioRef.current.pause();
-                    currentAudioRef.current.currentTime = 0;
-                }
-                setIsSpeaking(false);
-                setAnimationSrc('');
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [isListening]);
-
-    const handleEnableAudio = () => {
-        initializeAudio();
-        const enableButton = document.getElementById('enable-audio');
-        if (enableButton) {
-            enableButton.textContent = "Audio Enabled!";
-            enableButton.style.backgroundColor = "#4CAF50";
-        }
-        setTimeout(() => {
-            setShowAudioPermission(false);
-        }, 1500);
-    };
-
-    const handleTestAudio = () => {
-        try {
-            const testAudio = new Audio("https://cdn.freesound.org/previews/242/242758_4484625-lq.mp3");
-            testAudio.volume = 1.0;
-            const testButton = document.getElementById('test-audio');
-            if (testButton) testButton.textContent = "Playing test...";
-            testAudio.play()
-                .then(() => {
-                    if (testButton) {
-                         testButton.textContent = "Audio Works! ✓";
-                         testButton.style.backgroundColor = "#4CAF50";
-                    }
-                })
-                .catch(error => {
-                    console.error("Test audio error:", error);
-                    if (testButton) {
-                        testButton.textContent = "Audio Failed! Try again";
-                        testButton.style.backgroundColor = "#F44336";
-                    }
-                });
-        } catch (error) {
-            console.error("Error setting up test audio:", error);
-        }
+    // Animation display logic
+    const currentAnimation = () => {
+        if (isLoading && !isSpeaking && !isListening) return "/static/loading.webp";
+        if (animationSrc) return animationSrc;
+        return "/static/idle.webp";
     };
 
     return (
-        <div className="container">
-            <h1>Chat with Leila</h1>
-            <div className="chat-container">
-                <div id="animation-container" className="animation-container">
-                    {animationSrc && <img id="animation" src={animationSrc} alt="Animation" className={animationSrc ? '' : 'hidden'} />}
-                </div>
-                <div id="chatbox" ref={chatboxRef} className="chatbox">
-                    {chatMessages.map((msg, index) => (
-                        <div key={index} className={msg.isUser ? 'user' : 'hailey'}>
-                            {msg.isUser ? 'You' : 'Leila'}: {msg.text}
-                        </div>
-                    ))}
-                </div>
-            </div>
-            {isLoading && (
-                <div id="loading" className="loading">
-                    <div className="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+        <div className="bg-white rounded-lg shadow-xl flex flex-col h-[calc(100vh-180px)] max-h-[700px] w-full overflow-hidden">
+            <div ref={chatboxRef} className="flex-grow p-4 space-y-4 overflow-y-auto bg-slate-100/70 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+                {chatMessages.map((msg, index) => (
+                    <div key={index} className={msg.isUser ? 'user' : 'hailey'}> 
+                        {msg.isUser ? 'You' : 'Leila'}: {msg.text}
                     </div>
-                </div>
-            )}
+                ))}
+            </div>
+            <div className="animation-container-chat flex justify-center items-center h-32 bg-slate-100/70 border-t border-slate-200">
+                 <img id="animationChat" src={currentAnimation()} alt="Chat animation" className="h-full" />
+            </div>
             {showAudioPermission && (
                 <div id="audio-permission" className="audio-permission-overlay">
                     <div className="audio-permission-content">

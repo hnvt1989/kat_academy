@@ -1,15 +1,14 @@
-
 import { Category } from './types';
 
 export const CATEGORIES_DATA: Category[] = [
   {
-    id: 'sophia',
-    title: 'Sophia',
-    description: 'Solve fun puzzles',
+    id: 'leila',
+    title: 'Leila',
+    description: 'Chat with Leila the sheep',
     imageUrl: '/waving_sheep.png', // Updated
     bgColorClass: 'bg-brand-beige',
     detail: {
-      pageTitle: "Leila", // Updated
+      pageTitle: "Chat with Leila",
       subtitle: "Join Leila and her fluffy sheep on exciting adventures! Explore stories, games, and activities designed to spark creativity and learning.",
       mainImage: '/waving_sheep.png', // Updated
       imageDescription: "Cute cartoon sheep waving, representing Leila's adventures.", // Updated

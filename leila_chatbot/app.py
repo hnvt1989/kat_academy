@@ -1,11 +1,20 @@
 import os
 from io import BytesIO
 from flask import Flask, Blueprint, render_template, request, jsonify, send_file
+from flask_cors import CORS
 from openai import OpenAI
 from .config import OPENAI_API_KEY, DEBUG # Adjusted import for blueprint
 
+# ---- Start of Added Debug ----
+print(f"[DEBUG] OpenAI API Key Loaded in app.py: {'SET' if OPENAI_API_KEY else 'NOT SET'}")
+if OPENAI_API_KEY:
+    print(f"[DEBUG] OpenAI API Key starts with: {OPENAI_API_KEY[:5]}...") # Print first 5 chars
+# ---- End of Added Debug ----
+
 # Create a Blueprint
-leila_bp = Blueprint('leila', __name__, url_prefix='/leila', template_folder='../templates', static_folder='../static')
+leila_bp = Blueprint('leila', __name__, url_prefix='/category/leila', template_folder='../templates', static_folder='../static')
+# Apply CORS to the blueprint, specifically allowing the Vite dev server origin
+CORS(leila_bp, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 # Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -64,6 +73,8 @@ def tts():
 # You would typically register the blueprint in your main application's app.py
 if __name__ == '__main__':
     app = Flask(__name__)
+    # Also enable CORS for the standalone app instance if run directly
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
     # Adjust template and static folder paths if running standalone directly from this file
     # This setup assumes app.py is in leila_chatbot and templates/static are one level up.
     # For a more robust standalone execution, you might need to adjust these paths
