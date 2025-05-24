@@ -14,6 +14,10 @@
       "destination": "/api/category/leila/tts"
     },
     {
+      "source": "/category/leila/clear",
+      "destination": "/api/category/leila/clear"
+    },
+    {
       "source": "/((?!mathProblems\\.json|assets/|static/).*)",
       "destination": "/index.html"
     }

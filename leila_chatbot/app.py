@@ -62,6 +62,15 @@ def chat():
         assistant_reply = f"Error: {str(e)}"
     return jsonify({'reply': assistant_reply})
 
+@leila_bp.route('/clear', methods=['POST'])
+def clear():
+    """Clear the persistent chat history."""
+    try:
+        save_history([])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @leila_bp.route('/tts', methods=['POST'])
 def tts():
     """Convert text to speech using OpenAI's API and return an MP3."""

@@ -454,6 +454,16 @@ const LeilaPage: React.FC = () => {
         }
     };
 
+    const handleClearChat = async () => {
+        try {
+            await fetch('/category/leila/clear', { method: 'POST' });
+        } catch (error) {
+            console.error('Error clearing chat:', error);
+        } finally {
+            setChatMessages([]);
+        }
+    };
+
     const handleMicClick = () => {
         if (!recognitionRef.current) return;
 
@@ -505,9 +515,10 @@ const LeilaPage: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-xl flex flex-col h-[calc(100vh-180px)] max-h-[700px] w-full overflow-hidden">
-            <div ref={chatboxRef} className="flex-grow p-4 space-y-4 overflow-y-auto bg-slate-100/70 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+            <div ref={chatboxRef} className="relative flex-grow p-4 space-y-4 overflow-y-auto bg-slate-100/70 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+                <button onClick={handleClearChat} className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Clear Chat</button>
                 {chatMessages.map((msg, index) => (
-                    <div key={index} className={msg.isUser ? 'user' : 'hailey'}> 
+                    <div key={index} className={msg.isUser ? 'user' : 'hailey'}>
                         {msg.isUser ? 'You' : 'Leila'}: {msg.text}
                     </div>
                 ))}
