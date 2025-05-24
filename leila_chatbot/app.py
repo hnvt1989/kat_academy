@@ -1,15 +1,25 @@
-import os
+import os, json
 from io import BytesIO
 from flask import Flask, Blueprint, render_template, request, jsonify, send_file
 from flask_cors import CORS
 from openai import OpenAI
-from .config import OPENAI_API_KEY, DEBUG # Adjusted import for blueprint
+from .config import OPENAI_API_KEY, DEBUG
 
-# ---- Start of Added Debug ----
-print(f"[DEBUG] OpenAI API Key Loaded in app.py: {'SET' if OPENAI_API_KEY else 'NOT SET'}")
-if OPENAI_API_KEY:
-    print(f"[DEBUG] OpenAI API Key starts with: {OPENAI_API_KEY[:5]}...") # Print first 5 chars
-# ---- End of Added Debug ----
+MEMORY_FILE = os.path.join(os.path.dirname(__file__), 'memory.json')
+MAX_HISTORY = 20
+
+def load_history():
+    if os.path.exists(MEMORY_FILE):
+        try:
+            with open(MEMORY_FILE, 'r') as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+def save_history(history):
+    with open(MEMORY_FILE, 'w') as f:
+        json.dump(history[-MAX_HISTORY:], f)
 
 # Create a Blueprint
 leila_bp = Blueprint('leila', __name__, url_prefix='/category/leila', template_folder='../templates', static_folder='../static')
@@ -31,19 +41,24 @@ def chat():
     user_message = request.json.get('message', '')
     if not user_message:
         return jsonify({'error': 'No message provided'}), 400
+    history = load_history()
+    history.append({'role': 'user', 'content': user_message})
+    messages = [{
+        'role': 'system',
+        'content': 'You are Leila, an energetic sheep who loves to chat with children ages 6-7. Keep your replies short, fun, and easy to understand. Use simple words and short sentences. Be encouraging and positive. Ask questions to keep the conversation going. Never use emojis or symbols in your responses.'
+    }] + history
     try:
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=[
-                {'role': 'system', 'content': 'You are Leila, an energetic sheep who loves to chat with children ages 6-7. Keep your replies short, fun, and easy to understand. Use simple words and short sentences. Be encouraging and positive. Ask questions to keep the conversation going. Never use emojis or symbols in your responses.'},
-                {'role': 'user', 'content': user_message}
-            ],
+            messages=messages,
             temperature=0.7,
             max_tokens=60,
         )
         assistant_reply = response.choices[0].message.content
+        history.append({'role': 'assistant', 'content': assistant_reply})
+        save_history(history)
     except Exception as e:
-        print(f"Error: {str(e)}")  # Print error to console
+        print(f"Error: {str(e)}")
         assistant_reply = f"Error: {str(e)}"
     return jsonify({'reply': assistant_reply})
 
