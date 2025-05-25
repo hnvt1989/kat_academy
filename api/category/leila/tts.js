@@ -31,8 +31,8 @@ export default async function handler(req, res) {
       apiKey: apiKey
     });
 
-    // Use provided speed or default to 0.7 for slower speech suitable for kids (30% slower)
-    const speechSpeed = speed || 0.7;
+    // Use provided speed or default to 1 for normal speech
+    const speechSpeed = speed || 1;
 
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",

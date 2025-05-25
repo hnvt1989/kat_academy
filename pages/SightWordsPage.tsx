@@ -56,11 +56,11 @@ const SightWordsPage: React.FC = () => {
     }
 
     try {
-      // Use the existing TTS API endpoint with slower speed
+      // Use the existing TTS API endpoint at 60% speed for younger readers
       const response = await fetch("/category/leila/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, speed: 0.7 })
+        body: JSON.stringify({ text, speed: 0.6 })
       });
       
       if (response.ok) {
@@ -89,11 +89,11 @@ const SightWordsPage: React.FC = () => {
     } catch (error) {
       console.log("Server TTS failed, falling back to Web Speech API:", error);
       
-      // Fallback to Web Speech API with slower speed
+      // Fallback to Web Speech API at 60% speed
       if ('speechSynthesis' in window) {
         return new Promise<void>((resolve, reject) => {
           const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = 0.7; // 30% slower speech rate for elementary students
+          utterance.rate = 0.6; // Slower speech rate
           utterance.pitch = 1.1;
           utterance.volume = 1;
           
