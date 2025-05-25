@@ -331,11 +331,11 @@ const LeilaPage: React.FC = () => {
         }
 
         try {
-            // Try server-side TTS first
+            // Try server-side TTS first at normal speed
             const response = await fetch("/category/leila/tts", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text })
+                body: JSON.stringify({ text, speed: 1 })
             });
             
             if (response.ok) {
@@ -370,7 +370,7 @@ const LeilaPage: React.FC = () => {
             try {
                 if ('speechSynthesis' in window) {
                     const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.rate = 0.9;
+                    utterance.rate = 1;
                     utterance.pitch = 1.1;
                     utterance.volume = 1;
                     
