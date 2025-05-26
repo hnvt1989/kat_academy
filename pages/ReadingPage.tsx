@@ -7,7 +7,7 @@ const ReadingPage: React.FC = () => {
   const [selectedBook, setSelectedBook] = useState<ChildrenBook | null>(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
@@ -35,15 +35,8 @@ const ReadingPage: React.FC = () => {
     loadBooks();
   }, []);
 
-  // Generate image for current page
-  const generateImageForPage = async (page: BookPage, bookTitle: string, pageIndex: number) => {
-    const imageKey = `${bookTitle}-${pageIndex}`;
-    
-    if (generatedImages[imageKey]) {
-      return generatedImages[imageKey];
-    }
-
-    setIsGeneratingImage(true);
+  // Generate image for a specific page
+  const generateSingleImage = async (page: BookPage, bookTitle: string, pageIndex: number): Promise<string> => {
     try {
       // Try the production API first
       const response = await fetch('/api/category/reading/generate-image', {
@@ -58,10 +51,6 @@ const ReadingPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setGeneratedImages(prev => ({
-          ...prev,
-          [imageKey]: data.imageUrl
-        }));
         return data.imageUrl;
       } else {
         // Fallback for development - use a placeholder image service
@@ -71,18 +60,38 @@ const ReadingPage: React.FC = () => {
       console.log('API not available, using placeholder image for development');
       
       // Development fallback: use a placeholder image service
-      // This creates a unique placeholder based on the book and page
       const seed = encodeURIComponent(`${bookTitle}-${pageIndex}`);
-      const placeholderUrl = `https://picsum.photos/seed/${seed}/400/300`;
+      return `https://picsum.photos/seed/${seed}/400/300`;
+    }
+  };
+
+  // Generate all images for the selected book
+  const generateAllImagesForBook = async (book: ChildrenBook) => {
+    setIsGeneratingImages(true);
+    setError(null);
+    
+    try {
+      const imagePromises = book.pages.map((page, index) =>
+        generateSingleImage(page, book.title, index)
+      );
+
+      const imageUrls = await Promise.all(imagePromises);
       
+      const newImages: Record<string, string> = {};
+      imageUrls.forEach((url, index) => {
+        const imageKey = `${book.title}-${index}`;
+        newImages[imageKey] = url;
+      });
+
       setGeneratedImages(prev => ({
         ...prev,
-        [imageKey]: placeholderUrl
+        ...newImages
       }));
-      
-      return placeholderUrl;
+    } catch (err) {
+      console.error('Error generating images:', err);
+      setError('Failed to generate some illustrations.');
     } finally {
-      setIsGeneratingImage(false);
+      setIsGeneratingImages(false);
     }
   };
 
@@ -91,6 +100,16 @@ const ReadingPage: React.FC = () => {
     setSelectedBook(book);
     setCurrentPageIndex(0);
     setError(null);
+    
+    // Check if we already have images for this book
+    const hasAllImages = book.pages.every((_, index) => {
+      const imageKey = `${book.title}-${index}`;
+      return generatedImages[imageKey];
+    });
+
+    if (!hasAllImages) {
+      generateAllImagesForBook(book);
+    }
   };
 
   // Navigation functions
@@ -114,13 +133,19 @@ const ReadingPage: React.FC = () => {
     return selectedBook.pages[currentPageIndex];
   };
 
-  // Generate image when page changes
+  // Generate images for first book when loaded
   useEffect(() => {
-    const currentPage = getCurrentPage();
-    if (currentPage && selectedBook) {
-      generateImageForPage(currentPage, selectedBook.title, currentPageIndex);
+    if (selectedBook && books.length > 0) {
+      const hasAllImages = selectedBook.pages.every((_, index) => {
+        const imageKey = `${selectedBook.title}-${index}`;
+        return generatedImages[imageKey];
+      });
+
+      if (!hasAllImages) {
+        generateAllImagesForBook(selectedBook);
+      }
     }
-  }, [currentPageIndex, selectedBook]);
+  }, [selectedBook, books]);
 
   if (isLoadingBooks) {
     return (
@@ -167,16 +192,17 @@ const ReadingPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-brand-charcoal">{selectedBook.title}</h1>
               <p className="text-sm text-gray-600">
                 Page {currentPageIndex + 1} of {selectedBook.pages.length}
+                {isGeneratingImages && <span className="ml-2 text-blue-600">• Generating illustrations...</span>}
               </p>
             </div>
 
             {/* Book content */}
-            <div className="flex-1 flex flex-col p-6 overflow-hidden">
+            <div className="flex-1 flex flex-col p-6 overflow-y-auto">
               {currentPage && (
                 <>
                   {/* Illustration area */}
-                  <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-6 relative">
-                    {isGeneratingImage ? (
+                  <div className="flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-6 relative min-h-[300px] max-h-[400px]">
+                    {isGeneratingImages && !currentImage ? (
                       <div className="flex flex-col items-center">
                         <LoadingSpinner />
                         <p className="mt-4 text-gray-600">Generating illustration...</p>
@@ -190,19 +216,20 @@ const ReadingPage: React.FC = () => {
                     ) : (
                       <div className="text-center p-8">
                         <div className="text-6xl mb-4">📚</div>
-                        <p className="text-gray-600">{currentPage.illustration}</p>
+                        <p className="text-gray-600 mb-4">{currentPage.illustration}</p>
                         <button
-                          onClick={() => generateImageForPage(currentPage, selectedBook.title, currentPageIndex)}
-                          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+                          onClick={() => generateAllImagesForBook(selectedBook)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+                          disabled={isGeneratingImages}
                         >
-                          Generate Illustration
+                          {isGeneratingImages ? 'Generating...' : 'Generate All Illustrations'}
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* Story text */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                  {/* Story text - Always visible */}
+                  <div className="flex-shrink-0 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                     <p className="text-lg leading-relaxed text-brand-charcoal font-medium">
                       {currentPage.text}
                     </p>
@@ -212,7 +239,7 @@ const ReadingPage: React.FC = () => {
             </div>
 
             {/* Navigation controls */}
-            <div className="p-4 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
               <button
                 onClick={goToPreviousPage}
                 disabled={currentPageIndex === 0}
