@@ -4,11 +4,16 @@ import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import DetailPage from './pages/DetailPage';
 import LeilaPage from './pages/LeilaPage';
+import ReadingPage from './pages/ReadingPage';
 import { CloseIcon } from './components/icons';
 
 const App: React.FC = () => {
   const getViewFromPath = (path: string): View => {
-    if (path.startsWith('/category/')) return View.DETAIL;
+    if (path.startsWith('/category/')) {
+      const categoryId = path.split('/')[2];
+      if (categoryId === 'reading') return View.READING;
+      return View.DETAIL;
+    }
     return View.HOME;
   };
 
@@ -55,6 +60,9 @@ const App: React.FC = () => {
               imageDescription: 'Image of Leila the sheep'
             }
           });
+        } else if (categoryId === 'reading') {
+          // Reading page doesn't need activeCategory as it has its own routing
+          setActiveCategory(null);
         } else {
           // setActiveCategory(null); // Or find the category by ID
         }
@@ -70,9 +78,15 @@ const App: React.FC = () => {
   }, []);
 
   const handleSelectCategory = useCallback((category: Category) => {
-    setActiveCategory(category);
-    setCurrentView(View.DETAIL);
-    window.history.pushState({}, '', `/category/${category.id}`);
+    if (category.id === 'reading') {
+      setCurrentView(View.READING);
+      setActiveCategory(null);
+      window.history.pushState({}, '', `/category/reading`);
+    } else {
+      setActiveCategory(category);
+      setCurrentView(View.DETAIL);
+      window.history.pushState({}, '', `/category/${category.id}`);
+    }
     window.scrollTo(0, 0);
   }, []);
 
@@ -99,7 +113,7 @@ const App: React.FC = () => {
       </div>
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl relative">
-        {currentView === View.DETAIL && (
+        {(currentView === View.DETAIL || currentView === View.READING) && (
           <button
             onClick={handleCloseDetail}
             className="absolute top-4 right-4 md:top-0 md:right-0 z-20 bg-gray-700 hover:bg-gray-900 text-white rounded-full p-3 shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
@@ -113,6 +127,7 @@ const App: React.FC = () => {
         {currentView === View.DETAIL && activeCategory && (
           <DetailPage category={activeCategory} onSelectCategory={handleSelectCategory} />
         )}
+        {currentView === View.READING && <ReadingPage />}
       </main>
       <footer className="text-center py-8 text-gray-500 text-sm border-t border-gray-200 bg-white mt-12">
         <p>&copy; {new Date().getFullYear()} KidZone. All rights reserved.</p>

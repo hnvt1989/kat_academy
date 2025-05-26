@@ -18,6 +18,22 @@ export const CATEGORIES_DATA: Category[] = [
     }
   },
   {
+    id: 'reading',
+    title: 'Reading',
+    description: 'Interactive children\'s books',
+    imageUrl: '/cat.png',
+    bgColorClass: 'bg-green-400',
+    detail: {
+      pageTitle: "Interactive Reading",
+      subtitle: "Explore magical children's books with beautiful AI-generated illustrations.",
+      mainImage: '/cat.png',
+      imageDescription: "Interactive reading with illustrated stories.",
+      age: '4-8',
+      size: '5',
+      illustrator: 'AI GENERATED',
+    }
+  },
+  {
     id: 'sight-words',
     title: 'Sight Words',
     description: 'Learn common words with audio',

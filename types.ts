@@ -3,6 +3,7 @@ export enum View {
   DETAIL = 'DETAIL',
   LEILA = 'LEILA',
   SIGHT_WORDS = 'SIGHT_WORDS',
+  READING = 'READING',
 }
 
 export interface CategoryDetail {
@@ -70,4 +71,15 @@ export interface MathPhase {
   title: string;
   description: string;
   problemIds: number[];
+}
+
+// Children's books related types
+export interface BookPage {
+  illustration: string;
+  text: string;
+}
+
+export interface ChildrenBook {
+  title: string;
+  pages: BookPage[];
 }

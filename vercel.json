@@ -18,6 +18,10 @@
       "destination": "/api/category/leila/clear"
     },
     {
+      "source": "/category/reading/generate-image",
+      "destination": "/api/category/reading/generate-image"
+    },
+    {
       "source": "/((?!mathProblems\\.json|assets/|static/).*)",
       "destination": "/index.html"
     }
@@ -25,6 +29,15 @@
   "headers": [
     {
       "source": "/mathProblems.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/assets/children_books.json",
       "headers": [
         {
           "key": "Content-Type",
