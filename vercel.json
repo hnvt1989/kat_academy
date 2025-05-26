@@ -22,7 +22,15 @@
       "destination": "/api/category/reading/generate-image"
     },
     {
-      "source": "/((?!mathProblems\\.json|assets/|static/).*)",
+      "source": "/category/reading/save-illustration",
+      "destination": "/api/category/reading/save-illustration"
+    },
+    {
+      "source": "/category/reading/get-cached-illustration",
+      "destination": "/api/category/reading/get-cached-illustration"
+    },
+    {
+      "source": "/((?!mathProblems\\.json|assets/|static/|cached-illustrations/).*)",
       "destination": "/index.html"
     }
   ],
@@ -42,6 +50,19 @@
         {
           "key": "Content-Type",
           "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/cached-illustrations/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/jpeg"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
         }
       ]
     }

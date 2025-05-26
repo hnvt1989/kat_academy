@@ -135,10 +135,60 @@ const ReadingPage: React.FC = () => {
     }
   };
 
-  // Generate image for a specific page
+  // Check if illustration is cached
+  const checkCachedIllustration = async (bookTitle: string, pageIndex: number): Promise<string | null> => {
+    try {
+      const response = await fetch(`/api/category/reading/get-cached-illustration?bookTitle=${encodeURIComponent(bookTitle)}&pageIndex=${pageIndex}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists) {
+          console.log(`Found cached illustration: ${data.localUrl}`);
+          return data.localUrl;
+        }
+      }
+    } catch (err) {
+      console.log('Cache check failed, proceeding with generation');
+    }
+    return null;
+  };
+
+  // Save illustration to cache
+  const saveIllustrationToCache = async (bookTitle: string, pageIndex: number, imageUrl: string): Promise<string | null> => {
+    try {
+      const response = await fetch('/api/category/reading/save-illustration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookTitle,
+          pageIndex,
+          imageUrl
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Successfully cached illustration: ${data.localUrl}`);
+        return data.localUrl;
+      }
+    } catch (err) {
+      console.log('Failed to cache illustration:', err);
+    }
+    return null;
+  };
+
+  // Generate image for a specific page with caching
   const generateSingleImage = async (page: BookPage, bookTitle: string, pageIndex: number): Promise<string> => {
     console.log(`Generating image for: ${bookTitle} - Page ${pageIndex + 1} - ${page.illustration}`);
     
+    // First, check if we have a cached version
+    const cachedUrl = await checkCachedIllustration(bookTitle, pageIndex);
+    if (cachedUrl) {
+      console.log(`Using cached illustration for ${bookTitle} - Page ${pageIndex + 1}`);
+      return cachedUrl;
+    }
+
     try {
       // Try the production API first
       const response = await fetch('/api/category/reading/generate-image', {
@@ -154,7 +204,10 @@ const ReadingPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log(`Successfully generated AI image for ${bookTitle} - Page ${pageIndex + 1}`);
-        return data.imageUrl;
+        
+        // Cache the generated image
+        const localUrl = await saveIllustrationToCache(bookTitle, pageIndex, data.imageUrl);
+        return localUrl || data.imageUrl; // Return cached URL if available, otherwise original
       } else {
         console.log(`API not available (${response.status}), using placeholder`);
         throw new Error('API not available, using fallback');
@@ -166,7 +219,10 @@ const ReadingPage: React.FC = () => {
       const seed = encodeURIComponent(`${bookTitle.replace(/\s+/g, '-')}-page-${pageIndex}-${page.illustration.substring(0, 20)}`);
       const placeholderUrl = `https://picsum.photos/seed/${seed}/600/400`;
       console.log(`Generated placeholder URL: ${placeholderUrl}`);
-      return placeholderUrl;
+      
+      // Try to cache the placeholder too for consistency
+      const localUrl = await saveIllustrationToCache(bookTitle, pageIndex, placeholderUrl);
+      return localUrl || placeholderUrl;
     }
   };
 
