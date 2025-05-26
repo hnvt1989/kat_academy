@@ -1,11 +1,3 @@
-export enum View {
-  HOME = 'HOME',
-  DETAIL = 'DETAIL',
-  LEILA = 'LEILA',
-  SIGHT_WORDS = 'SIGHT_WORDS',
-  READING = 'READING',
-}
-
 export interface CategoryDetail {
   pageTitle: string;
   subtitle: string;

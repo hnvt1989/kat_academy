@@ -1,7 +1,5 @@
 import React from 'react';
 import { Category } from '../types';
-import { CATEGORIES_DATA } from '../constants';
-import CategoryItem from '../components/CategoryItem';
 import LeilaPage from './LeilaPage';
 import TypingPage from './TypingPage';
 import MathPage from './MathPage';
@@ -9,24 +7,21 @@ import SightWordsPage from './SightWordsPage';
 
 interface DetailPageProps {
   category: Category;
-  onSelectCategory: (category: Category) => void; // For "Explore More" items
 }
 
-const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) => {
+const DetailPage: React.FC<DetailPageProps> = ({ category }) => {
   const { pageTitle, subtitle, mainImage, age, size, illustrator, imageDescription } = category.detail;
   
-  const exploreMoreCategories = CATEGORIES_DATA.filter((c: Category) => c.id !== category.id).slice(0, 3);
-
   const isChatCategory = category.id === 'leila';
   const isTypingCategory = category.id === 'learn-typing';
   const isMathCategory = category.id === 'learn-math';
   const isSightWordsCategory = category.id === 'sight-words';
 
   return (
-    <div className="flex flex-col items-center space-y-10 pt-8 pb-16">
-      <div className="text-center space-y-3 max-w-3xl">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-brand-charcoal">{pageTitle}</h1>
-        {subtitle && <p className="text-lg text-gray-600">{subtitle}</p>}
+    <div className="flex flex-col items-center space-y-12 pt-10 pb-20">
+      <div className="text-center space-y-6 max-w-4xl">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-brand-charcoal leading-tight">{pageTitle}</h1>
+        {subtitle && <p className="text-xl md:text-2xl lg:text-3xl text-gray-600 leading-relaxed">{subtitle}</p>}
       </div>
 
       {isChatCategory ? (
@@ -59,30 +54,14 @@ const DetailPage: React.FC<DetailPageProps> = ({ category, onSelectCategory }) =
             />
           </div>
           {(age || size || illustrator) && (
-            <div className="text-center text-xs text-gray-500 mt-2 space-x-2">
-              {age && <span>AGE {age}</span>}
+            <div className="text-center text-base md:text-lg text-gray-500 mt-4 space-x-3 leading-relaxed">
+              {age && <span className="font-medium">AGE {age}</span>}
               {(age && size) && <span>/</span>}
-              {size && <span>SIZE {size}</span>}
+              {size && <span className="font-medium">SIZE {size}</span>}
               {((age || size) && illustrator) && <span>/</span>}
-              {illustrator && <span>{illustrator.toUpperCase()}</span>}
+              {illustrator && <span className="font-medium">{illustrator.toUpperCase()}</span>}
             </div>
           )}
-        </div>
-      )}
-
-      {exploreMoreCategories.length > 0 && (
-        <div className="w-full pt-10 mt-10 border-t border-gray-200">
-          <h2 className="text-2xl font-bold text-brand-charcoal text-center mb-8">Explore More</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-8 w-full max-w-4xl mx-auto">
-            {exploreMoreCategories.map((cat: Category, index: number) => (
-              <CategoryItem 
-                key={index} 
-                category={cat} 
-                onSelect={onSelectCategory}
-                size="small"
-              />
-            ))}
-          </div>
         </div>
       )}
     </div>

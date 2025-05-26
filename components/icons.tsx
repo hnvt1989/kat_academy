@@ -19,12 +19,12 @@ export const CloseIcon: React.FC<{ className?: string }> = ({ className = "w-8 h
 );
 
 export const KidZoneLogo: React.FC = () => (
-  <div className="flex items-center space-x-1">
-    <svg width="28" height="28" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <div className="flex items-center space-x-2">
+    <svg width="36" height="36" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M65 130C100.899 130 130 100.899 130 65C130 29.1015 100.899 0 65 0C29.1015 0 0 29.1015 0 65C0 100.899 29.1015 130 65 130Z" fill="#333333"/>
       {/* New K path */}
       <path d="M38 40 H48 V60 L70 40 L78 40 L53 65 L78 90 L70 90 L48 70 V90 H38 Z" fill="white"/>
     </svg>
-    <span className="font-extrabold text-2xl text-brand-charcoal">Kat's Academy</span>
+    <span className="font-extrabold text-3xl md:text-4xl text-brand-charcoal">Kat's Academy</span>
   </div>
 );

@@ -7,19 +7,30 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNavigateHome }) => {
   return (
-    <header className="flex items-center justify-between py-4 mb-8">
-      <button onClick={onNavigateHome} aria-label="Go to homepage">
+    <header className="flex items-center justify-between py-6 mb-10">
+      <button onClick={onNavigateHome} aria-label="Go to homepage" className="focus:outline-none focus:ring-4 focus:ring-blue-300 rounded-lg">
         <KidZoneLogo />
       </button>
-      <nav className="hidden md:flex items-center space-x-6 text-gray-600">
-        <button onClick={onNavigateHome} className="hover:text-brand-charcoal transition-colors">Home</button>
-      </nav>
-      <div className="flex items-center space-x-4 ml-auto">
-        <button aria-label="Search" className="text-gray-500 hover:text-brand-charcoal transition-colors">
-          <SearchIcon className="w-5 h-5" />
+      <nav className="hidden md:flex items-center space-x-8 text-gray-600">
+        <button 
+          onClick={onNavigateHome} 
+          className="text-xl font-semibold hover:text-brand-charcoal transition-colors px-4 py-2 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          Home
         </button>
-        <button aria-label="User Account" className="text-gray-500 hover:text-brand-charcoal transition-colors">
-          <UserIcon className="w-5 h-5" />
+      </nav>
+      <div className="flex items-center space-x-6 ml-auto">
+        <button 
+          aria-label="Search" 
+          className="text-gray-500 hover:text-brand-charcoal transition-colors p-3 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          <SearchIcon className="w-7 h-7" />
+        </button>
+        <button 
+          aria-label="User Account" 
+          className="text-gray-500 hover:text-brand-charcoal transition-colors p-3 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          <UserIcon className="w-7 h-7" />
         </button>
       </div>
     </header>
