@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChildrenBook, BookPage } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -10,6 +10,9 @@ const ReadingPage: React.FC = () => {
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Load books from JSON file
   useEffect(() => {
@@ -34,6 +37,103 @@ const ReadingPage: React.FC = () => {
 
     loadBooks();
   }, []);
+
+  // Text-to-speech function
+  const speakText = async (text: string) => {
+    if (isPlaying) return;
+
+    setIsPlaying(true);
+    
+    // Stop current audio if playing
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+    }
+
+    try {
+      // Use the existing TTS API endpoint at 60% speed for younger readers
+      const response = await fetch("/category/leila/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, speed: 0.6 })
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        currentAudioRef.current = audio;
+        
+        return new Promise<void>((resolve, reject) => {
+          audio.onended = () => {
+            URL.revokeObjectURL(url);
+            setIsPlaying(false);
+            resolve();
+          };
+          
+          audio.onerror = () => {
+            URL.revokeObjectURL(url);
+            console.error('Audio playback error');
+            setIsPlaying(false);
+            reject(new Error('Audio playback failed'));
+          };
+          
+          audio.play().catch(reject);
+        });
+      } else {
+        throw new Error("Server TTS not available");
+      }
+    } catch (error) {
+      console.log("Server TTS failed, falling back to Web Speech API:", error);
+      
+      // Fallback to Web Speech API at 60% speed
+      if ('speechSynthesis' in window) {
+        return new Promise<void>((resolve, reject) => {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 0.6; // Slower speech rate
+          utterance.pitch = 1.1;
+          utterance.volume = 1;
+          
+          utterance.onend = () => {
+            setIsPlaying(false);
+            resolve();
+          };
+          
+          utterance.onerror = () => {
+            console.error('Web Speech API error');
+            setIsPlaying(false);
+            reject(new Error('Speech synthesis failed'));
+          };
+          
+          speechSynthesis.speak(utterance);
+        });
+      } else {
+        console.error("Speech synthesis not supported");
+        setIsPlaying(false);
+        throw new Error("Speech synthesis not supported");
+      }
+    }
+  };
+
+  const handleSpeakClick = () => {
+    const currentPage = getCurrentPage();
+    if (!currentPage) return;
+
+    if (isPlaying) {
+      // Stop current playback
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+      }
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+      }
+      setIsPlaying(false);
+    } else {
+      // Start reading the text
+      speakText(currentPage.text);
+    }
+  };
 
   // Generate image for a specific page
   const generateSingleImage = async (page: BookPage, bookTitle: string, pageIndex: number): Promise<string> => {
@@ -97,6 +197,16 @@ const ReadingPage: React.FC = () => {
 
   // Handle book selection
   const handleBookSelect = (book: ChildrenBook) => {
+    // Stop any current audio when switching books
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+    }
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+    setIsPlaying(false);
+    
     setSelectedBook(book);
     setCurrentPageIndex(0);
     setError(null);
@@ -114,12 +224,32 @@ const ReadingPage: React.FC = () => {
 
   // Navigation functions
   const goToNextPage = () => {
+    // Stop any current audio when navigating
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+    }
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+    setIsPlaying(false);
+    
     if (selectedBook && currentPageIndex < selectedBook.pages.length - 1) {
       setCurrentPageIndex(currentPageIndex + 1);
     }
   };
 
   const goToPreviousPage = () => {
+    // Stop any current audio when navigating
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+    }
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+    setIsPlaying(false);
+    
     if (currentPageIndex > 0) {
       setCurrentPageIndex(currentPageIndex - 1);
     }
@@ -146,6 +276,19 @@ const ReadingPage: React.FC = () => {
       }
     }
   }, [selectedBook, books]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+      }
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   if (isLoadingBooks) {
     return (
@@ -228,11 +371,40 @@ const ReadingPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Story text - Always visible */}
+                  {/* Story text with speaker button - Always visible */}
                   <div className="flex-shrink-0 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                    <p className="text-lg leading-relaxed text-brand-charcoal font-medium">
-                      {currentPage.text}
-                    </p>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1">
+                        <p className="text-lg leading-relaxed text-brand-charcoal font-medium">
+                          {currentPage.text}
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleSpeakClick}
+                        disabled={!currentPage.text}
+                        className={`
+                          flex-shrink-0 w-12 h-12 rounded-full shadow-lg transition-all duration-200 transform active:scale-95
+                          ${isPlaying 
+                            ? 'bg-gradient-to-r from-orange-400 to-red-500 animate-pulse' 
+                            : 'bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 hover:scale-110'
+                          }
+                          flex items-center justify-center group
+                        `}
+                        aria-label={isPlaying ? "Stop reading" : "Read text aloud"}
+                      >
+                        <svg 
+                          className="w-6 h-6 text-white transition-transform group-hover:scale-110" 
+                          fill="currentColor" 
+                          viewBox="0 0 20 20"
+                        >
+                          <path 
+                            fillRule="evenodd" 
+                            d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" 
+                            clipRule="evenodd" 
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
