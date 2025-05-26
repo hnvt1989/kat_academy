@@ -8,9 +8,11 @@
     "dev:vite": "vite",
     "dev:python": "./venv/bin/python -m leila_chatbot.app",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cache-illustrations": "node scripts/cache-illustrations.js"
   },
   "dependencies": {
+    "node-fetch": "^3.3.2",
     "openai": "^4.67.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
