@@ -137,6 +137,8 @@ const ReadingPage: React.FC = () => {
 
   // Generate image for a specific page
   const generateSingleImage = async (page: BookPage, bookTitle: string, pageIndex: number): Promise<string> => {
+    console.log(`Generating image for: ${bookTitle} - Page ${pageIndex + 1} - ${page.illustration}`);
+    
     try {
       // Try the production API first
       const response = await fetch('/api/category/reading/generate-image', {
@@ -151,42 +153,66 @@ const ReadingPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(`Successfully generated AI image for ${bookTitle} - Page ${pageIndex + 1}`);
         return data.imageUrl;
       } else {
-        // Fallback for development - use a placeholder image service
+        console.log(`API not available (${response.status}), using placeholder`);
         throw new Error('API not available, using fallback');
       }
     } catch (err) {
-      console.log('API not available, using placeholder image for development');
+      console.log(`Using placeholder image for ${bookTitle} - Page ${pageIndex + 1}`);
       
-      // Development fallback: use a placeholder image service
-      const seed = encodeURIComponent(`${bookTitle}-${pageIndex}`);
-      return `https://picsum.photos/seed/${seed}/400/300`;
+      // Development fallback: use a placeholder image service with more specific seeding
+      const seed = encodeURIComponent(`${bookTitle.replace(/\s+/g, '-')}-page-${pageIndex}-${page.illustration.substring(0, 20)}`);
+      const placeholderUrl = `https://picsum.photos/seed/${seed}/600/400`;
+      console.log(`Generated placeholder URL: ${placeholderUrl}`);
+      return placeholderUrl;
     }
   };
 
   // Generate all images for the selected book
   const generateAllImagesForBook = async (book: ChildrenBook) => {
+    console.log(`Starting to generate all images for book: ${book.title}`);
     setIsGeneratingImages(true);
     setError(null);
     
     try {
-      const imagePromises = book.pages.map((page, index) =>
-        generateSingleImage(page, book.title, index)
-      );
-
-      const imageUrls = await Promise.all(imagePromises);
-      
+      // Generate images sequentially to avoid overwhelming the API
       const newImages: Record<string, string> = {};
-      imageUrls.forEach((url, index) => {
+      
+      for (let index = 0; index < book.pages.length; index++) {
+        const page = book.pages[index];
         const imageKey = `${book.title}-${index}`;
-        newImages[imageKey] = url;
-      });
-
-      setGeneratedImages(prev => ({
-        ...prev,
-        ...newImages
-      }));
+        
+        // Skip if we already have this image
+        if (generatedImages[imageKey]) {
+          console.log(`Image already exists for ${imageKey}, skipping`);
+          newImages[imageKey] = generatedImages[imageKey];
+          continue;
+        }
+        
+        try {
+          const imageUrl = await generateSingleImage(page, book.title, index);
+          newImages[imageKey] = imageUrl;
+          console.log(`Successfully generated image for ${imageKey}`);
+          
+          // Update state immediately so user can see progress
+          setGeneratedImages(prev => ({
+            ...prev,
+            [imageKey]: imageUrl
+          }));
+          
+          // Small delay between requests to be respectful to APIs
+          if (index < book.pages.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (err) {
+          console.error(`Failed to generate image for ${imageKey}:`, err);
+          // Continue with other images even if one fails
+        }
+      }
+      
+      console.log(`Completed generating images for ${book.title}`);
     } catch (err) {
       console.error('Error generating images:', err);
       setError('Failed to generate some illustrations.');
@@ -197,6 +223,8 @@ const ReadingPage: React.FC = () => {
 
   // Handle book selection
   const handleBookSelect = (book: ChildrenBook) => {
+    console.log(`Selecting book: ${book.title}`);
+    
     // Stop any current audio when switching books
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
@@ -211,13 +239,19 @@ const ReadingPage: React.FC = () => {
     setCurrentPageIndex(0);
     setError(null);
     
-    // Check if we already have images for this book
+    // Always trigger image generation for newly selected book
+    // This ensures images are generated even if the check fails
+    console.log(`Checking if images exist for ${book.title}`);
     const hasAllImages = book.pages.every((_, index) => {
       const imageKey = `${book.title}-${index}`;
-      return generatedImages[imageKey];
+      const hasImage = generatedImages[imageKey];
+      console.log(`Image ${imageKey}: ${hasImage ? 'exists' : 'missing'}`);
+      return hasImage;
     });
 
+    console.log(`Book ${book.title} has all images: ${hasAllImages}`);
     if (!hasAllImages) {
+      console.log(`Generating images for ${book.title}`);
       generateAllImagesForBook(book);
     }
   };
