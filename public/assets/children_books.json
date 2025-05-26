@@ -1,0 +1,87 @@
+[
+    {
+        "title": "Molly's Magic Garden",
+        "pages": [
+            {
+                "illustration": "Molly, a little rabbit watering colorful flowers.",
+                "text": "Molly loved her garden, full of magical flowers."
+            },
+            {
+                "illustration": "A glowing flower sparkling under the moonlight.",
+                "text": "At night, her garden shined bright with magical blooms."
+            },
+            {
+                "illustration": "Butterflies and bees happily dancing around Molly.",
+                "text": "Molly's garden was magical, making everyone happy."
+            }
+        ]
+    },
+    {
+        "title": "Oliver's Ocean Adventure",
+        "pages": [
+            {
+                "illustration": "Oliver, a small octopus waving underwater.",
+                "text": "Oliver dreamed of exploring the deep ocean."
+            },
+            {
+                "illustration": "Oliver discovering colorful coral reefs.",
+                "text": "He found beautiful corals and friendly fish."
+            },
+            {
+                "illustration": "Oliver happily swimming home with new friends.",
+                "text": "Oliver learned adventures are best shared with friends."
+            }
+        ]
+    },
+    {
+        "title": "Sophie's Sunny Day",
+        "pages": [
+            {
+                "illustration": "Sophie, a cheerful squirrel playing in the sunshine.",
+                "text": "Sophie loved sunny days for playing outside."
+            },
+            {
+                "illustration": "Sophie picking juicy berries from bushes.",
+                "text": "Sunny days meant berries, sweet and tasty."
+            },
+            {
+                "illustration": "Sophie napping under a tree, happy and content.",
+                "text": "Sunny days filled Sophie's heart with joy."
+            }
+        ]
+    },
+    {
+        "title": "Leo's Little Lantern",
+        "pages": [
+            {
+                "illustration": "Leo, a small lion holding a bright lantern.",
+                "text": "Leo carried his lantern to brighten the dark."
+            },
+            {
+                "illustration": "Leo helping friends find their way home.",
+                "text": "His lantern made the night safe and comforting."
+            },
+            {
+                "illustration": "Leo sleeping peacefully with his lantern beside him.",
+                "text": "Leo knew his lantern's light shined inside him too."
+            }
+        ]
+    },
+    {
+        "title": "Tina Turtle Takes Her Time",
+        "pages": [
+            {
+                "illustration": "Tina, a slow and happy turtle walking on a sunny path.",
+                "text": "Tina loved taking her time to enjoy every moment."
+            },
+            {
+                "illustration": "Tina noticing little details, like butterflies and flowers.",
+                "text": "She found beauty everywhere because she never rushed."
+            },
+            {
+                "illustration": "Tina smiling broadly, enjoying life at her own pace.",
+                "text": "Tina knew slowing down made every day special."
+            }
+        ]
+    }
+]

@@ -18,7 +18,15 @@
       "destination": "/api/category/leila/clear"
     },
     {
-      "source": "/((?!mathProblems\\.json|assets/|static/).*)",
+      "source": "/category/reading/save-illustration",
+      "destination": "/api/category/reading/save-illustration"
+    },
+    {
+      "source": "/category/reading/get-cached-illustration",
+      "destination": "/api/category/reading/get-cached-illustration"
+    },
+    {
+      "source": "/((?!mathProblems\\.json|assets/|static/|illustrations/).*)",
       "destination": "/index.html"
     }
   ],
@@ -29,6 +37,28 @@
         {
           "key": "Content-Type",
           "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/assets/children_books.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/illustrations/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/jpeg"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
         }
       ]
     }

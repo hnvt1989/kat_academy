@@ -1,0 +1,10 @@
+# Ignore all cached illustration files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# Keep the directory but ignore its contents
+*
+!.gitignore 

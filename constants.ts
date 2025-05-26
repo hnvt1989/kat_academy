@@ -18,6 +18,22 @@ export const CATEGORIES_DATA: Category[] = [
     }
   },
   {
+    id: 'reading',
+    title: 'Reading',
+    description: 'Interactive children\'s books',
+    imageUrl: '/cat.png',
+    bgColorClass: 'bg-green-400',
+    detail: {
+      pageTitle: "Interactive Reading",
+      subtitle: "Explore magical children's books with beautiful AI-generated illustrations.",
+      mainImage: '/cat.png',
+      imageDescription: "Interactive reading with illustrated stories.",
+      age: '4-8',
+      size: '5',
+      illustrator: 'AI GENERATED',
+    }
+  },
+  {
     id: 'sight-words',
     title: 'Sight Words',
     description: 'Learn common words with audio',
@@ -31,20 +47,6 @@ export const CATEGORIES_DATA: Category[] = [
       age: '5-8',
       size: '100+',
       illustrator: 'READING MASTERS',
-    }
-  },
-  {
-    id: 'tiny-cats',
-    title: 'Tiny Cats',
-    description: 'Read exciting stories',
-    imageUrl: '/cat.png', // Updated
-    bgColorClass: 'bg-white', 
-    detail: {
-      pageTitle: "Tiny chat", // Updated
-      subtitle: "Explore the enchanting world of kittens and cats through delightful stories.",
-      mainImage: '/cat.png', // Updated
-      imageDescription: "Cute cartoon cat waving, for Tiny chat stories.", // Updated
-      illustrator: 'KITTY ILLUSTRATIONS',
     }
   },
   {
