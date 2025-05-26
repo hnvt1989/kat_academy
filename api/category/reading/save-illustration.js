@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     }
 
     // Create cache directory if it doesn't exist
-    const cacheDir = path.join(process.cwd(), 'public', 'cached-illustrations');
+    const cacheDir = path.join(process.cwd(), 'public', 'illustrations');
     try {
       await fs.access(cacheDir);
     } catch {
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     await fs.writeFile(filePath, buffer);
 
     // Return the local file path
-    const localUrl = `/cached-illustrations/${filename}`;
+    const localUrl = `/illustrations/${filename}`;
     
     return res.status(200).json({ 
       success: true, 

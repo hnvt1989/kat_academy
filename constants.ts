@@ -50,20 +50,6 @@ export const CATEGORIES_DATA: Category[] = [
     }
   },
   {
-    id: 'tiny-cats',
-    title: 'Tiny Cats',
-    description: 'Read exciting stories',
-    imageUrl: '/cat.png', // Updated
-    bgColorClass: 'bg-white', 
-    detail: {
-      pageTitle: "Tiny chat", // Updated
-      subtitle: "Explore the enchanting world of kittens and cats through delightful stories.",
-      mainImage: '/cat.png', // Updated
-      imageDescription: "Cute cartoon cat waving, for Tiny chat stories.", // Updated
-      illustrator: 'KITTY ILLUSTRATIONS',
-    }
-  },
-  {
     id: 'learn-typing',
     title: 'Learn Typing',
     description: 'Play interactive games',

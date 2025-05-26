@@ -86,7 +86,7 @@ async function saveImageToCache(imageUrl, bookTitle, pageIndex) {
     }
 
     // Create cache directory if it doesn't exist
-    const cacheDir = path.join(process.cwd(), 'public', 'cached-illustrations');
+    const cacheDir = path.join(process.cwd(), 'public', 'illustrations');
     try {
       await fs.access(cacheDir);
     } catch {
@@ -101,7 +101,7 @@ async function saveImageToCache(imageUrl, bookTitle, pageIndex) {
 
     // Save the file
     await fs.writeFile(filePath, buffer);
-    const localUrl = `/cached-illustrations/${filename}`;
+    const localUrl = `/illustrations/${filename}`;
     
     console.log(`  ✓ Saved to: ${localUrl}`);
     return localUrl;
@@ -115,7 +115,7 @@ async function saveImageToCache(imageUrl, bookTitle, pageIndex) {
 async function illustrationExists(bookTitle, pageIndex) {
   const safeBookTitle = bookTitle.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
   const filename = `${safeBookTitle}-page-${pageIndex}.jpg`;
-  const filePath = path.join(process.cwd(), 'public', 'cached-illustrations', filename);
+  const filePath = path.join(process.cwd(), 'public', 'illustrations', filename);
   
   try {
     await fs.access(filePath);

@@ -6,7 +6,7 @@ This script pre-generates and caches all illustrations for the children's books 
 
 - 📚 Parses all books from `public/assets/children_books.json`
 - 🎨 Generates AI illustrations using OpenAI DALL-E 3 API
-- 💾 Saves images to `public/cached-illustrations/` folder
+- 💾 Saves images to `public/illustrations/` folder
 - ⏭️ Skips already cached illustrations
 - 🔄 Includes fallback to placeholder images if OpenAI API is unavailable
 - ⏱️ Rate limiting to respect API limits
@@ -38,7 +38,7 @@ The script will use placeholder images from Picsum Photos.
 ## Output
 
 The script will:
-- Create `public/cached-illustrations/` directory if it doesn't exist
+- Create `public/illustrations/` directory if it doesn't exist
 - Generate files named like: `mollys-magic-garden-page-0.jpg`
 - Display progress for each book and page
 - Show a summary report at the end
@@ -52,7 +52,7 @@ The script includes a 2-second delay between API requests to respect OpenAI's ra
 After running, your directory will look like:
 ```
 public/
-├── cached-illustrations/
+├── illustrations/
 │   ├── mollys-magic-garden-page-0.jpg
 │   ├── mollys-magic-garden-page-1.jpg
 │   ├── mollys-magic-garden-page-2.jpg

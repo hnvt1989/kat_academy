@@ -135,105 +135,56 @@ const ReadingPage: React.FC = () => {
     }
   };
 
-  // Check if illustration is cached
-  const checkCachedIllustration = async (bookTitle: string, pageIndex: number): Promise<string | null> => {
+  // Check if illustration exists locally
+  const checkLocalIllustration = async (bookTitle: string, pageIndex: number): Promise<string | null> => {
     try {
-      const response = await fetch(`/api/category/reading/get-cached-illustration?bookTitle=${encodeURIComponent(bookTitle)}&pageIndex=${pageIndex}`);
+      const safeBookTitle = bookTitle.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+      const filename = `${safeBookTitle}-page-${pageIndex}.jpg`;
+      const localUrl = `/illustrations/${filename}`;
+      
+      // Test if the image exists by trying to load it
+      const response = await fetch(localUrl, { method: 'HEAD' });
       if (response.ok) {
-        const data = await response.json();
-        if (data.exists) {
-          console.log(`Found cached illustration: ${data.localUrl}`);
-          return data.localUrl;
-        }
+        console.log(`Found local illustration: ${localUrl}`);
+        return localUrl;
       }
     } catch (err) {
-      console.log('Cache check failed, proceeding with generation');
+      console.log('Local illustration not found, using placeholder');
     }
     return null;
   };
 
-  // Save illustration to cache
-  const saveIllustrationToCache = async (bookTitle: string, pageIndex: number, imageUrl: string): Promise<string | null> => {
-    try {
-      const response = await fetch('/api/category/reading/save-illustration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          bookTitle,
-          pageIndex,
-          imageUrl
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`Successfully cached illustration: ${data.localUrl}`);
-        return data.localUrl;
-      }
-    } catch (err) {
-      console.log('Failed to cache illustration:', err);
-    }
-    return null;
+  // Generate placeholder image URL
+  const generatePlaceholderImage = (bookTitle: string, pageIndex: number, illustrationDescription: string): string => {
+    const seed = encodeURIComponent(`${bookTitle.replace(/\s+/g, '-')}-page-${pageIndex}-${illustrationDescription.substring(0, 20)}`);
+    const placeholderUrl = `https://picsum.photos/seed/${seed}/600/400`;
+    console.log(`Generated placeholder URL: ${placeholderUrl}`);
+    return placeholderUrl;
   };
 
-  // Generate image for a specific page with caching
-  const generateSingleImage = async (page: BookPage, bookTitle: string, pageIndex: number): Promise<string> => {
-    console.log(`Generating image for: ${bookTitle} - Page ${pageIndex + 1} - ${page.illustration}`);
+  // Get image for a specific page (local first, then placeholder)
+  const getPageImage = async (page: BookPage, bookTitle: string, pageIndex: number): Promise<string> => {
+    console.log(`Getting image for: ${bookTitle} - Page ${pageIndex + 1} - ${page.illustration}`);
     
-    // First, check if we have a cached version
-    const cachedUrl = await checkCachedIllustration(bookTitle, pageIndex);
-    if (cachedUrl) {
-      console.log(`Using cached illustration for ${bookTitle} - Page ${pageIndex + 1}`);
-      return cachedUrl;
+    // First, check if we have a local illustration
+    const localUrl = await checkLocalIllustration(bookTitle, pageIndex);
+    if (localUrl) {
+      console.log(`Using local illustration for ${bookTitle} - Page ${pageIndex + 1}`);
+      return localUrl;
     }
 
-    try {
-      // Try the production API first
-      const response = await fetch('/api/category/reading/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          description: page.illustration
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`Successfully generated AI image for ${bookTitle} - Page ${pageIndex + 1}`);
-        
-        // Cache the generated image
-        const localUrl = await saveIllustrationToCache(bookTitle, pageIndex, data.imageUrl);
-        return localUrl || data.imageUrl; // Return cached URL if available, otherwise original
-      } else {
-        console.log(`API not available (${response.status}), using placeholder`);
-        throw new Error('API not available, using fallback');
-      }
-    } catch (err) {
-      console.log(`Using placeholder image for ${bookTitle} - Page ${pageIndex + 1}`);
-      
-      // Development fallback: use a placeholder image service with more specific seeding
-      const seed = encodeURIComponent(`${bookTitle.replace(/\s+/g, '-')}-page-${pageIndex}-${page.illustration.substring(0, 20)}`);
-      const placeholderUrl = `https://picsum.photos/seed/${seed}/600/400`;
-      console.log(`Generated placeholder URL: ${placeholderUrl}`);
-      
-      // Try to cache the placeholder too for consistency
-      const localUrl = await saveIllustrationToCache(bookTitle, pageIndex, placeholderUrl);
-      return localUrl || placeholderUrl;
-    }
+    // If no local illustration exists, use placeholder
+    console.log(`Using placeholder image for ${bookTitle} - Page ${pageIndex + 1}`);
+    return generatePlaceholderImage(bookTitle, pageIndex, page.illustration);
   };
 
-  // Generate all images for the selected book
-  const generateAllImagesForBook = async (book: ChildrenBook) => {
-    console.log(`Starting to generate all images for book: ${book.title}`);
+  // Load all images for the selected book
+  const loadAllImagesForBook = async (book: ChildrenBook) => {
+    console.log(`Loading all images for book: ${book.title}`);
     setIsGeneratingImages(true);
     setError(null);
     
     try {
-      // Generate images sequentially to avoid overwhelming the API
       const newImages: Record<string, string> = {};
       
       for (let index = 0; index < book.pages.length; index++) {
@@ -242,15 +193,15 @@ const ReadingPage: React.FC = () => {
         
         // Skip if we already have this image
         if (generatedImages[imageKey]) {
-          console.log(`Image already exists for ${imageKey}, skipping`);
+          console.log(`Image already loaded for ${imageKey}, skipping`);
           newImages[imageKey] = generatedImages[imageKey];
           continue;
         }
         
         try {
-          const imageUrl = await generateSingleImage(page, book.title, index);
+          const imageUrl = await getPageImage(page, book.title, index);
           newImages[imageKey] = imageUrl;
-          console.log(`Successfully generated image for ${imageKey}`);
+          console.log(`Successfully loaded image for ${imageKey}`);
           
           // Update state immediately so user can see progress
           setGeneratedImages(prev => ({
@@ -258,20 +209,20 @@ const ReadingPage: React.FC = () => {
             [imageKey]: imageUrl
           }));
           
-          // Small delay between requests to be respectful to APIs
+          // Small delay to avoid overwhelming the browser
           if (index < book.pages.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
         } catch (err) {
-          console.error(`Failed to generate image for ${imageKey}:`, err);
+          console.error(`Failed to load image for ${imageKey}:`, err);
           // Continue with other images even if one fails
         }
       }
       
-      console.log(`Completed generating images for ${book.title}`);
+      console.log(`Completed loading images for ${book.title}`);
     } catch (err) {
-      console.error('Error generating images:', err);
-      setError('Failed to generate some illustrations.');
+      console.error('Error loading images:', err);
+      setError('Failed to load some illustrations.');
     } finally {
       setIsGeneratingImages(false);
     }
@@ -295,8 +246,8 @@ const ReadingPage: React.FC = () => {
     setCurrentPageIndex(0);
     setError(null);
     
-    // Always trigger image generation for newly selected book
-    // This ensures images are generated even if the check fails
+    // Always trigger image loading for newly selected book
+    // This ensures images are loaded even if the check fails
     console.log(`Checking if images exist for ${book.title}`);
     const hasAllImages = book.pages.every((_, index) => {
       const imageKey = `${book.title}-${index}`;
@@ -307,8 +258,8 @@ const ReadingPage: React.FC = () => {
 
     console.log(`Book ${book.title} has all images: ${hasAllImages}`);
     if (!hasAllImages) {
-      console.log(`Generating images for ${book.title}`);
-      generateAllImagesForBook(book);
+      console.log(`Loading images for ${book.title}`);
+      loadAllImagesForBook(book);
     }
   };
 
@@ -353,7 +304,7 @@ const ReadingPage: React.FC = () => {
     return selectedBook.pages[currentPageIndex];
   };
 
-  // Generate images for first book when loaded
+  // Load images for first book when loaded
   useEffect(() => {
     if (selectedBook && books.length > 0) {
       const hasAllImages = selectedBook.pages.every((_, index) => {
@@ -362,7 +313,7 @@ const ReadingPage: React.FC = () => {
       });
 
       if (!hasAllImages) {
-        generateAllImagesForBook(selectedBook);
+        loadAllImagesForBook(selectedBook);
       }
     }
   }, [selectedBook, books]);
@@ -425,7 +376,7 @@ const ReadingPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-brand-charcoal">{selectedBook.title}</h1>
               <p className="text-sm text-gray-600">
                 Page {currentPageIndex + 1} of {selectedBook.pages.length}
-                {isGeneratingImages && <span className="ml-2 text-blue-600">• Generating illustrations...</span>}
+                {isGeneratingImages && <span className="ml-2 text-blue-600">• Loading illustrations...</span>}
               </p>
             </div>
 
@@ -438,7 +389,7 @@ const ReadingPage: React.FC = () => {
                     {isGeneratingImages && !currentImage ? (
                       <div className="flex flex-col items-center">
                         <LoadingSpinner />
-                        <p className="mt-4 text-gray-600">Generating illustration...</p>
+                        <p className="mt-4 text-gray-600">Loading illustration...</p>
                       </div>
                     ) : currentImage ? (
                       <img
@@ -451,11 +402,11 @@ const ReadingPage: React.FC = () => {
                         <div className="text-6xl mb-4">📚</div>
                         <p className="text-gray-600 mb-4">{currentPage.illustration}</p>
                         <button
-                          onClick={() => generateAllImagesForBook(selectedBook)}
+                          onClick={() => loadAllImagesForBook(selectedBook)}
                           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
                           disabled={isGeneratingImages}
                         >
-                          {isGeneratingImages ? 'Generating...' : 'Generate All Illustrations'}
+                          {isGeneratingImages ? 'Loading...' : 'Reload Illustrations'}
                         </button>
                       </div>
                     )}

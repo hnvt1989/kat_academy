@@ -26,12 +26,12 @@ export default async function handler(req, res) {
     // Generate safe filename
     const safeBookTitle = bookTitle.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
     const filename = `${safeBookTitle}-page-${pageIndex}.jpg`;
-    const filePath = path.join(process.cwd(), 'public', 'cached-illustrations', filename);
+    const filePath = path.join(process.cwd(), 'public', 'illustrations', filename);
 
     // Check if file exists
     try {
       await fs.access(filePath);
-      const localUrl = `/cached-illustrations/${filename}`;
+      const localUrl = `/illustrations/${filename}`;
       
       return res.status(200).json({ 
         exists: true, 

@@ -18,10 +18,6 @@
       "destination": "/api/category/leila/clear"
     },
     {
-      "source": "/category/reading/generate-image",
-      "destination": "/api/category/reading/generate-image"
-    },
-    {
       "source": "/category/reading/save-illustration",
       "destination": "/api/category/reading/save-illustration"
     },
@@ -30,7 +26,7 @@
       "destination": "/api/category/reading/get-cached-illustration"
     },
     {
-      "source": "/((?!mathProblems\\.json|assets/|static/|cached-illustrations/).*)",
+      "source": "/((?!mathProblems\\.json|assets/|static/|illustrations/).*)",
       "destination": "/index.html"
     }
   ],
@@ -54,7 +50,7 @@
       ]
     },
     {
-      "source": "/cached-illustrations/(.*)",
+      "source": "/illustrations/(.*)",
       "headers": [
         {
           "key": "Content-Type",
