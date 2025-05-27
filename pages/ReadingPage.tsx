@@ -381,11 +381,11 @@ const ReadingPage: React.FC = () => {
             </div>
 
             {/* Book content */}
-            <div className="flex-1 flex flex-col p-6 overflow-y-auto">
+            <div className="flex-1 p-6 overflow-y-auto">
               {currentPage && (
-                <>
-                  {/* Illustration area */}
-                  <div className="flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg mb-6 relative min-h-[300px] max-h-[400px]">
+                <div className="flex flex-row h-full gap-6">
+                  {/* Illustration area - Left side */}
+                  <div className="w-1/2 flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg relative h-full">
                     {isGeneratingImages && !currentImage ? (
                       <div className="flex flex-col items-center">
                         <LoadingSpinner />
@@ -412,8 +412,8 @@ const ReadingPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Story text with speaker button - Always visible */}
-                  <div className="flex-shrink-0 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                  {/* Story text with speaker button - Right side */}
+                  <div className="w-1/2 flex-shrink-0 bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col justify-center">
                     <div className="flex items-start gap-4">
                       <div className="flex-1">
                         <p className="text-lg leading-relaxed text-brand-charcoal font-medium">
@@ -447,7 +447,7 @@ const ReadingPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
 
